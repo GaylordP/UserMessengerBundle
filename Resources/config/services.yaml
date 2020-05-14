@@ -1,1 +1,24 @@
 services:
+    GaylordP\UserMessengerBundle\Controller\UserMessengerController:
+        tags: ['controller.service_arguments']
+        autoconfigure: true
+        autowire: true
+
+
+    GaylordP\UserMessengerBundle\Repository\UserMessengerConversationRepository:
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'
+
+    GaylordP\UserMessengerBundle\Repository\UserMessengerConversationMessageRepository:
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'
+
+    GaylordP\UserMessengerBundle\Repository\UserMessengerConversationUserRepository:
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'

@@ -1,0 +1,13 @@
+{{ 'action.user.message.send'|trans({}, 'user_messenger')|button_link(
+    path('user_message_member',
+        {
+            'slug': user.slug,
+        }
+    ),
+    'blue',
+    include('@UserMessenger/_ico.html.twig', with_context = false),
+    true,
+    {
+        'class': 'btn-sm',
+    }
+) }}

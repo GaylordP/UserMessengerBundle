@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="file.ext">
+        <body>
+            <trans-unit id="action.user.message.delete">
+                <source>action.user.message.delete</source>
+                <target>Supprimer la conversation</target>
+            </trans-unit>
+            <trans-unit id="action.user.message.send">
+                <source>action.user.message.send</source>
+                <target>Envoyer un message</target>
+            </trans-unit>
+            <trans-unit id="action.user.message.send_short">
+                <source>action.user.message.send_short</source>
+                <target>Envoyer</target>
+            </trans-unit>
+
+            <trans-unit id="label.your_message">
+                <source>label.your_message</source>
+                <target>Votre message</target>
+            </trans-unit>
+
+            <trans-unit id="title.user.message">
+                <source>title.user.message</source>
+                <target>Mes messages</target>
+            </trans-unit>
+            <trans-unit id="title.user.message.delete">
+                <source>title.user.message.delete</source>
+                <target>Supprimer la la conversation avec %username%</target>
+            </trans-unit>
+            <trans-unit id="title.user.message_with">
+                <source>title.user.message_with</source>
+                <target>Messages avec %username%</target>
+            </trans-unit>
+
+            <trans-unit id="user.message.created_successfully">
+                <source>user.message.created_successfully</source>
+                <target>Votre message a été envoyé à %username%.</target>
+            </trans-unit>
+            <trans-unit id="user.message.delete">
+                <source>user.message.delete</source>
+                <target>Souhaitez-vous réellement supprimer la conversation avec %username% ?</target>
+            </trans-unit>
+            <trans-unit id="user.message.deleted_successfully">
+                <source>user.message.deleted_successfully</source>
+                <target>La conversation avec %username% a été supprimée.</target>
+            </trans-unit>
+            <trans-unit id="user.message.not_found">
+                <source>user.message.not_found</source>
+                <target>Il n'y a aucun message à afficher.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

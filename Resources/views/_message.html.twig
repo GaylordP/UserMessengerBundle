@@ -1,0 +1,75 @@
+{% set user_message = message.createdBy %}
+
+{% if 'user_message' == app.request.get('_route') %}
+    {% for user in conversation.users %}
+        {% if user != app.user %}
+            {% set user_message = user %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if previous_date is null or previous_date != message.createdAt|date('Ymd') %}
+    <h2 class="message-title">
+        {{ message.createdAt|format_datetime('full', 'none')|capitalize }}
+    </h2>
+{% endif %}
+<div class="comment message{% if 'user_message_member' == app.request.get('_route') %}{% if message.createdBy == app.user %} message-my{% else %} message-him{% endif %}{% endif %}">
+    <span class="info">
+        <span>
+            <time datetime="{{ message.createdAt|date('Y-m-d') }}T{{ message.createdAt|date('H:i:s') }}.000Z">
+                {{ message.createdAt|format_time('none', 'H:mm') }}
+            </time>
+        </span>
+        <a href="{{ path('member_profile',
+            {
+                'slug': user_message.slug,
+            }
+        ) }}" data-toggle="tooltip" title="{{ 'label.show_profile'|trans({}, 'user') }}">
+            {{ include('@User/user/_ico.html.twig',
+                {
+                    'user': user_message,
+                    'size': 25,
+                },
+                with_context = false
+            ) }}
+        </a>
+    </span>
+    <div class="content border-{{ user_message.color.slug }}">
+        {% if 'user_message' == app.request.get('_route') %}
+            <a href="{{ path('user_message_member',
+                {
+                    'slug': user_message.slug,
+                }
+            ) }}" class="link-message">
+            {{ include('@User/button/_user.html.twig',
+                {
+                    'user': user_message,
+                    'remove_link': TRUE,
+                },
+                with_context = false
+            ) }}
+            <br>
+        {% endif %}
+        {{ message.message|nl2br }}
+        {% if 'user_message' == app.request.get('_route') %}
+            </a>
+        {% endif %}
+    </div>
+    {% if 'user_message' == app.request.get('_route') %}
+        <div class="message-control-index">
+            {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
+                path('user_message_delete',
+                    {
+                        'slug': user_message.slug,
+                    }
+                ),
+                '_delete_',
+                null,
+                true,
+                {
+                    'class': 'btn-sm',
+                }
+            ) }}
+        </div>
+    {% endif %}
+</div>

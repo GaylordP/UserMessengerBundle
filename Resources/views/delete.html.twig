@@ -1,0 +1,39 @@
+{% extends 'default/template/template.html.twig' %}
+
+{% block title %}
+    {{ include('@User/user/_ico.html.twig',
+        {
+            'user': member,
+            'size': 'title',
+        },
+        with_context = false
+    ) }}
+    {{ 'title.user.message.delete'|trans(
+        {
+            '%username%': include('@User/button/_user.html.twig',
+                {
+                    'user': member,
+                },
+                with_context = false
+            )
+        },
+        'user_messenger'
+    )|raw }}
+{% endblock %}
+
+{% block content %}
+    <p>
+        {{ ('user.message.delete')|trans(
+            {
+                '%username%': include('@User/button/_user.html.twig',
+                    {
+                        'user': member,
+                    },
+                    with_context = false
+                )
+            },
+            'user_messenger'
+        )|raw }}
+    </p>
+    {{ form_delete('action.user.message.delete'|trans({}, 'user_messenger')) }}
+{% endblock %}

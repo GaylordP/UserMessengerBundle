@@ -1,0 +1,64 @@
+{% extends 'default/template/template.html.twig' %}
+
+{% block title %}
+    {% if 'user_message_member' == app.request.get('_route') %}
+        {{ include('@User/user/_ico.html.twig',
+            {
+                'user': member,
+                'size': 'title',
+            },
+            with_context = false
+        ) }}
+        {{ 'title.user.message_with'|trans(
+            {
+                '%username%': include('@User/button/_user.html.twig',
+                    {
+                        'user': member,
+                    },
+                    with_context = false
+                )
+            },
+            'user_messenger'
+        )|raw }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="comments">
+        {{ form_new(
+            form,
+            'action.user.message.send_short'|trans({}, 'user_messenger'),
+            include('@UserMessenger/_ico.html.twig', with_context = false)
+        ) }}
+        {% if messages is not empty %}
+            <div class="message-control">
+                {% apply spaceless %}
+                    {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
+                        path('user_message_delete',
+                            {
+                                'slug': member.slug,
+                            }
+                        ),
+                        '_delete_',
+                        null,
+                        false,
+                        {
+                            'class': 'btn-sm',
+                        }
+                    ) }}
+                {% endapply %}
+            </div>
+        {% endif %}
+        {% set previous_date = null %}
+        {% for message in messages %}
+            {{ include('@UserMessenger/_message.html.twig',
+                {
+                    'message': message,
+                    'previous_date': previous_date,
+                },
+                with_context = false
+            ) }}
+            {% set previous_date = message.createdAt|date('Ymd') %}
+        {% endfor %}
+    </div>
+{% endblock %}

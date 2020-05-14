@@ -1,0 +1,52 @@
+.message-control-index {
+    position: absolute;
+    right: 0;
+    margin: .25rem;
+    z-index: 904;
+    text-align: right;
+}
+
+.message-control-index > *:not(:first-child) {
+    margin-left: .25rem;
+}
+
+.message-control {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+h2.message-title {
+    color: $gray-600;
+    border-top: 1px dashed $gray-300;
+    margin: 0 0 .5rem 0;
+    padding: .25rem 0 0 0;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.message {
+    position: relative;
+}
+
+.message.message-him,
+.message.message-my {
+    max-width: 90%;
+}
+
+.message.message-my {
+    margin-left: 10%;
+    justify-content: flex-end;
+}
+
+.message > .content > a.link-message {
+    color: inherit;
+    display: block;
+    transition: background .1s linear;
+    margin: -.25rem -.5rem;
+    padding: .25rem .5rem;
+}
+
+.message > .content > a.link-message:hover {
+    background-color: $gray-400;
+    text-decoration: none;
+}
