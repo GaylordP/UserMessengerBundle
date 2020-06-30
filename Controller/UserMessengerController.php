@@ -89,14 +89,16 @@ class UserMessengerController extends AbstractController
                 ->findByUserMessengerConversationAndUser($this->getUser(), $conversation)
             ;
 
+            $lastMessage = !empty($messages) ? $messages[array_key_last($messages)] : null;
+
             foreach ($conversation->__users as $conversationUser) {
-                $conversationUser->setReadAt(new \DateTime());
-            }
+                if ($conversationUser->getUser() === $this->getUser()) {
+                    $conversationUser->setReadAt(new \DateTime());
 
-            $lastMessage = $messages[array_key_last($messages)];
+                    $entityManager->flush();
+                }
 
-            if ($lastMessage->getCreatedBy() === $this->getUser()) {
-                foreach ($conversation->__users as $conversationUser) {
+                if ($lastMessage === $this->getUser()) {
                     $update = new Update(
                         'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
                         json_encode([
