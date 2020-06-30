@@ -1,0 +1,15 @@
+<div class="text-right mb-3">
+    {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
+        path('user_message_member_delete',
+            {
+                'uuid': conversation.uuid,
+            }
+        ),
+        '_delete_',
+        null,
+        false,
+        {
+            'class': 'btn-sm',
+        }
+    ) }}
+</div>

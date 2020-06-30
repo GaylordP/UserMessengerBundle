@@ -5,7 +5,7 @@
         {{ include('@User/user/_ico.html.twig',
             {
                 'user': member,
-                'size': 'title',
+                'size': 25,
             },
             with_context = false
         ) }}
@@ -20,45 +20,41 @@
             },
             'user_messenger'
         )|raw }}
+    {% elseif 'user_message_group' == app.request.get('_route') %}
+        {# note pour plus tard : titre message groupé #}
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    <div class="comments">
-        {{ form_new(
-            form,
-            'action.user.message.send_short'|trans({}, 'user_messenger'),
-            include('@UserMessenger/_ico.html.twig', with_context = false)
-        ) }}
-        {% if messages is not empty %}
-            <div class="message-control">
-                {% apply spaceless %}
-                    {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
-                        path('user_message_delete',
-                            {
-                                'slug': member.slug,
-                            }
-                        ),
-                        '_delete_',
-                        null,
-                        false,
-                        {
-                            'class': 'btn-sm',
-                        }
-                    ) }}
-                {% endapply %}
-            </div>
-        {% endif %}
-        {% set previous_date = null %}
-        {% for message in messages %}
-            {{ include('@UserMessenger/_message.html.twig',
+    <div id="message-user-messenger">
+        <div class="comments" id="user-messenger-conversation-{% if conversation.uuid is defined %}{{ conversation.uuid }}{% else %}{{ app.user.slug }}-{{ member.slug }}{% endif %}">
+            {{ include('@UserMessenger/_message_form.html.twig',
                 {
-                    'message': message,
-                    'previous_date': previous_date,
+                    'form': form,
                 },
                 with_context = false
             ) }}
-            {% set previous_date = message.createdAt|date('Ymd') %}
-        {% endfor %}
+            {% if conversation is not empty %}
+                {{ include('@UserMessenger/_delete_link.html.twig',
+                    {
+                        'conversation': conversation,
+                    },
+                    with_context = false
+                ) }}
+            {% endif %}
+            {% for message in messages %}
+                {{ include('@UserMessenger/_message.html.twig',
+                    {
+                        'page': 'message',
+                        'conversation': conversation,
+                        'message': message,
+                        'previous_date': previous_date ?? null,
+                        'userPrintedThisMessage': app.user,
+                    },
+                    with_context = false
+                ) }}
+                {% set previous_date = message.createdAt %}
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

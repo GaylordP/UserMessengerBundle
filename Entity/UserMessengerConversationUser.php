@@ -6,7 +6,6 @@ use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use GaylordP\UserBundle\Annotation\CreatedAt;
 use GaylordP\UserBundle\Annotation\CreatedBy;
-use GaylordP\UserBundle\Entity\Traits\Deletable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**

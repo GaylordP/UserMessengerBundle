@@ -1,0 +1,82 @@
+h2.message-title {
+    color: $gray-600;
+    border-top: 1px dashed $gray-300;
+    margin: 0 0 .5rem 0;
+    padding: .25rem 0 0 0;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.message-him,
+.message-my {
+    max-width: 90%;
+}
+
+.message-my {
+    margin-left: 10%;
+    justify-content: flex-end;
+}
+
+.comment > .content > a.link-message {
+    color: inherit;
+    display: block;
+    transition: background .1s linear;
+    margin: -.25rem -.5rem;
+    padding: .25rem .5rem;
+}
+
+.comment > .content > a.link-message:hover {
+    background-color: $gray-400;
+    text-decoration: none;
+}
+
+.message-control-index {
+    position: absolute;
+    right: 0;
+    margin: .25rem;
+    z-index: 904;
+    text-align: right;
+}
+
+.user-messenger-dropdown-menu {
+    min-width: 400px;
+    max-height: 400px;
+    overflow-y: scroll;
+    font-size: 75%;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.user-messenger-dropdown-item {
+    display: flex;
+    align-items: center;
+}
+
+.user-messenger-dropdown-menu > a.dropdown-item {
+    border-left: 5px solid $dark;
+    padding: .25rem .5rem;
+    transition: all .1s linear;
+}
+
+.user-messenger-dropdown-menu > a.dropdown-item:not(:last-child) {
+    border-bottom: 1px solid $table-border-color !important;
+}
+
+.user-messenger-dropdown-menu > a.dropdown-item:nth-child(odd) {
+    background-color: $gray-200;
+}
+
+.user-messenger-dropdown-menu > a.dropdown-item:hover {
+    background-color: $gray-300;
+}
+
+.user-messenger-dropdown-menu > *:last-of-type {
+    border-left: none !important;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    text-align: center;
+}
+
+.user-messenger-dropdown-menu > a.dropdown-item > span.info {
+    margin-right: .5rem;
+}

@@ -2,6 +2,10 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="file.ext">
         <body>
+            <trans-unit id="action.user.message">
+                <source>action.user.message</source>
+                <target>Voir tous les messages</target>
+            </trans-unit>
             <trans-unit id="action.user.message.delete">
                 <source>action.user.message.delete</source>
                 <target>Supprimer la conversation</target>
@@ -18,6 +22,14 @@
             <trans-unit id="label.your_message">
                 <source>label.your_message</source>
                 <target>Votre message</target>
+            </trans-unit>
+            <trans-unit id="label.read">
+                <source>label.read</source>
+                <target>Lu</target>
+            </trans-unit>
+            <trans-unit id="label.unread">
+                <source>label.unread</source>
+                <target>Non lu</target>
             </trans-unit>
 
             <trans-unit id="title.user.message">

@@ -4,6 +4,11 @@ services:
         autoconfigure: true
         autowire: true
 
+    GaylordP\UserMessengerBundle\Provider\UserMessengerProvider:
+        arguments:
+            - '@security.helper'
+            - '@GaylordP\UserMessengerBundle\Repository\UserMessengerConversationMessageRepository'
+            - '@GaylordP\UserMessengerBundle\Repository\UserMessengerConversationUserRepository'
 
     GaylordP\UserMessengerBundle\Repository\UserMessengerConversationRepository:
         arguments:
@@ -22,3 +27,12 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
+
+    GaylordP\UserMessengerBundle\Twig\Extension:
+        arguments:
+            - '@security.helper'
+            - '@twig'
+            - '@GaylordP\UserMessengerBundle\Provider\UserMessengerProvider'
+            - '@GaylordP\UserMessengerBundle\Repository\UserMessengerConversationRepository'
+        tags:
+            - 'twig.extension'

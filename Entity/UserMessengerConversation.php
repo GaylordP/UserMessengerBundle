@@ -30,9 +30,16 @@ class UserMessengerConversation
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=16, nullable=true)
+     * @ORM\Column(type="string", length=36, nullable=true)
      */
-    private $token;
+    private $uuid;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", nullable=true)
+     */
+    private $title;
 
     /**
      * Get id
@@ -65,22 +72,42 @@ class UserMessengerConversation
     }
 
     /**
-     * Get token
+     * Get uuid
      *
      * @return string
      */
-    public function getToken(): ?string
+    public function getUuid(): ?string
     {
-        return $this->token;
+        return $this->uuid;
     }
 
     /**
-     * Set token
+     * Set uuid
      *
-     * @param string $token
+     * @param string $uuid
      */
-    public function setToken(?string $token): void
+    public function setUuid(?string $uuid): void
     {
-        $this->token = $token;
+        $this->uuid = $uuid;
+    }
+
+    /**
+     * Get title
+     *
+     * @return string
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * Set title
+     *
+     * @param string $title
+     */
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }

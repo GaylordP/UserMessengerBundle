@@ -43,7 +43,6 @@ class UserMessengerConversationMessage
      *
      * @ORM\ManyToMany(
      *     targetEntity="App\Entity\UserMedia",
-     *     cascade={"persist"},
      * )
      * @ORM\OrderBy({"id": "ASC"})
      */

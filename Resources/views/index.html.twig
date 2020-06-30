@@ -4,31 +4,34 @@
     <i class="{{ include('@UserMessenger/_ico.html.twig', with_context = false) }}"></i>
     {{ 'title.user.message'|trans({}, 'user_messenger') }}
     <span class="badge badge-blue">
-        XXXXXXX
+        0
     </span>
 {% endblock %}
 
 {% block content %}
-    {% if conversations is not empty %}
-        <div class="comments">
-            {% set previous_date = null %}
-            {% for conversation in conversations %}
-                {{ include('@UserMessenger/_message.html.twig',
-                    {
-                        'conversation': conversation,
-                        'message': conversation.last_message,
-                        'previous_date': previous_date,
-                    },
-                    with_context = false
-                ) }}
-                {% set previous_date = conversation.last_message.createdAt|date('Ymd') %}
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-danger mb-0">
-            <p class="mb-0">
-                {{ ('user.message.not_found')|trans({}, 'user_messenger') }}
-            </p>
-        </div>
-    {% endif %}
+    <div id="index-user-messenger" data-empty-message="{{ ('user.message.not_found')|trans({}, 'user_messenger') }}">
+        {% if conversations is not empty %}
+            <div class="comments">
+                {% for conversation in conversations %}
+                    {{ include('@UserMessenger/_message.html.twig',
+                        {
+                            'page': 'index',
+                            'conversation': conversation,
+                            'message': conversation.__lastMessage,
+                            'previous_date': previous_date ?? null,
+                            'userPrintedThisMessage': app.user,
+                        },
+                        with_context = false
+                    ) }}
+                    {% set previous_date = conversation.__lastMessage.createdAt %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-danger mb-0">
+                <p class="mb-0">
+                    {{ ('user.message.not_found')|trans({}, 'user_messenger') }}
+                </p>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

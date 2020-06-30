@@ -11,6 +11,8 @@ use GaylordP\UserMessengerBundle\Entity\UserMessengerConversationUser;
 
 class UserMessengerConversationRepository extends ServiceEntityRepository
 {
+    const LAST_MESSAGE_ID = '__lastMessageId';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserMessengerConversation::class);
@@ -18,7 +20,7 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
 
     public function findAllByUser(User $userLogged): array
     {
-        return $this
+        $results = $this
             ->createQueryBuilder('conversation')
             ->innerJoin(UserMessengerConversationUser::class, 'messageUserLogged', 'WITH', '
                 messageUserLogged.userMessengerConversation = conversation AND
@@ -43,6 +45,16 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+
+        $return = [];
+
+        foreach ($results as $result) {
+            $result[0]->{self::LAST_MESSAGE_ID} = $result['last_message_id'];
+
+            $return[] = $result[0];
+        }
+
+        return $return;
     }
 
     public function findByTwoUsers(

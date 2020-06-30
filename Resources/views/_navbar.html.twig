@@ -1,0 +1,40 @@
+{% if app.user %}
+    <li class="nav-item dropdown{% if app.request.get('_route') in [
+        'user_message_index',
+        'user_message_group',
+        'user_message_group_delete',
+        'user_message_member',
+        'user_message_member_delete',
+    ] %} active{% endif %}">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUserMessenger" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="{{ include('@UserMessenger/_ico.html.twig', with_context = false) }}"></i>
+            <span class="badge badge-user-message-unread badge-{% if 0  == count_user_message_unread() %}secondary{% else %}danger{% endif %}">
+                {{ count_user_message_unread() }}
+            </span>
+        </a>
+        <div class="dropdown-menu user-messenger-dropdown-menu" aria-labelledby="navbarDropdownUserMessenger" data-empty-message="{{ 'user.message.not_found'|trans({}, 'user_messenger') }}" data-go-message="{{ 'action.user.message'|trans({}, 'user_messenger') }}" data-go-message-url="{{ path('user_message') }}" data-label-read="{{ 'label.read'|trans({}, 'user_messenger') }}"  data-label-unread="{{ 'label.unread'|trans({}, 'user_messenger') }}">
+            {% set conversations = user_messenger() %}
+            {% if conversations is not empty %}
+                {% for conversation in conversations %}
+                    {{ include('@UserMessenger/_message.html.twig',
+                        {
+                            'page': 'navbar',
+                            'conversation': conversation,
+                            'message': conversation.__lastMessage,
+                            'previous_date': null,
+                            'userPrintedThisMessage': app.user,
+                        },
+                        with_context = false
+                    ) }}
+                {% endfor %}
+                <a href="{{ path('user_message') }}" class="dropdown-item dropdown-go-message">
+                    {{ 'action.user.message'|trans({}, 'user_messenger') }}
+                </a>
+            {% else %}
+                <span class="dropdown-item dropdown-empty-message">
+                    {{ 'user.message.not_found'|trans({}, 'user_messenger') }}
+                </span>
+            {% endif %}
+        </div>
+    </li>
+{% endif %}

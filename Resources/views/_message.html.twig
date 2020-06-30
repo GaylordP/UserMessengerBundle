@@ -1,66 +1,118 @@
-{% set user_message = message.createdBy %}
+{% set user_message_reference = message.createdBy %}
 
-{% if 'user_message' == app.request.get('_route') %}
-    {% for user in conversation.users %}
-        {% if user != app.user %}
-            {% set user_message = user %}
+{% if 'index' == page or 'navbar' == page %}
+    {% for conversation_user in conversation.__users %}
+        {% if conversation_user != userPrintedThisMessage %}
+            {% set user_message_reference = conversation_user.user %}
         {% endif %}
     {% endfor %}
 {% endif %}
 
-{% if previous_date is null or previous_date != message.createdAt|date('Ymd') %}
-    <h2 class="message-title">
-        {{ message.createdAt|format_datetime('full', 'none')|capitalize }}
+{% if 'navbar' != page and (previous_date is null or previous_date|date('Ymd') != message.createdAt|date('Ymd')) %}
+    <h2 class="message-title" data-title-user-messenger-date="{{ message.createdAt|date('Ymd') }}">
+        <time datetime="{{ message.createdAt|date('Y-m-d') }}T{{ message.createdAt|date('H:i:s') }}.000Z">
+            {{ message.createdAt|format_datetime('full', 'none')|capitalize }}
+        </time>
     </h2>
 {% endif %}
-<div class="comment message{% if 'user_message_member' == app.request.get('_route') %}{% if message.createdBy == app.user %} message-my{% else %} message-him{% endif %}{% endif %}">
+
+{% if 'navbar' == page %}
+    <a href="{{ path('user_message_member',
+        {
+            'slug': user_message_reference.slug,
+        }
+    ) }}" class="border-{{ user_message_reference.color.slug }} user-messenger-dropdown-item dropdown-item user-messenger-conversation-{{ conversation.uuid }}">
+{% else %}
+    <div class="comment{% if 'message' == page %} message-{% if user_message_reference == userPrintedThisMessage %}my{% else %}him{% endif %}{% endif %} user-messenger-conversation-{{ conversation.uuid }}">
+{% endif %}
     <span class="info">
-        <span>
-            <time datetime="{{ message.createdAt|date('Y-m-d') }}T{{ message.createdAt|date('H:i:s') }}.000Z">
-                {{ message.createdAt|format_time('none', 'H:mm') }}
-            </time>
-        </span>
-        <a href="{{ path('member_profile',
-            {
-                'slug': user_message.slug,
-            }
-        ) }}" data-toggle="tooltip" title="{{ 'label.show_profile'|trans({}, 'user') }}">
-            {{ include('@User/user/_ico.html.twig',
+        {% if 'navbar' != page %}
+            <span>
+                <time datetime="{{ message.createdAt|date('Y-m-d') }}T{{ message.createdAt|date('H:i:s') }}.000Z">
+                    {{ message.createdAt|format_time('none', 'H:mm') }}
+                </time>
+            </span>
+        {% endif %}
+        {% if 'navbar' != page %}
+            <a href="{{ path('member_profile',
                 {
-                    'user': user_message,
-                    'size': 25,
-                },
-                with_context = false
-            ) }}
-        </a>
+                    'slug': user_message_reference.slug,
+                }
+            ) }}" data-toggle="tooltip" title="{{ 'label.show_profile'|trans({}, 'user') }}">
+        {% endif %}
+                {{ include('@User/user/_ico.html.twig',
+                    {
+                        'user': user_message_reference,
+                        'size': 25,
+                    },
+                    with_context = false
+                ) }}
+        {% if 'navbar' != page %}
+            </a>
+        {% endif %}
     </span>
-    <div class="content border-{{ user_message.color.slug }}">
-        {% if 'user_message' == app.request.get('_route') %}
+    <div class="content border-{{ user_message_reference.color.slug }}">
+        {% if 'index' == page %}
             <a href="{{ path('user_message_member',
                 {
-                    'slug': user_message.slug,
+                    'slug': user_message_reference.slug,
                 }
             ) }}" class="link-message">
             {{ include('@User/button/_user.html.twig',
                 {
-                    'user': user_message,
-                    'remove_link': TRUE,
+                    'user': user_message_reference,
+                    'remove_link': true,
                 },
                 with_context = false
             ) }}
             <br>
         {% endif %}
-        {{ message.message|nl2br }}
-        {% if 'user_message' == app.request.get('_route') %}
+        {% if 'message' != page %}
+            {% if message.createdBy != userPrintedThisMessage %}
+                {% for conversation_user in conversation.__users %}
+                    {% if conversation_user.user == userPrintedThisMessage %}
+                        {% if conversation_user.readAt >= message.createdAt %}
+                            <span class="badge badge-success badge-read">
+                                {{ 'label.read'|trans({}, 'user_messenger') }}
+                            </span>
+                        {% else %}
+                            <span class="badge badge-danger badge-read">
+                                {{ 'label.unread'|trans({}, 'user_messenger') }}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% for conversation_user in conversation.__users %}
+                    {% if conversation_user.user != userPrintedThisMessage %}
+                        {% if conversation_user.readAt >= message.createdAt %}
+                            <span class="badge badge-secondary badge-read">
+                                {{ 'label.read'|trans({}, 'user_messenger') }}
+                            </span>
+                        {% else %}
+                            <span class="badge badge-secondary badge-read">
+                                {{ 'label.unread'|trans({}, 'user_messenger') }}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+        {% if 'navbar' != page %}
+            {{ message.message|nl2br }}
+        {% else %}
+            {{  message.message|length > 50 ?  message.message|slice(0, 50) ~ '…' : message.message }}
+        {% endif %}
+        {% if 'index' == page %}
             </a>
         {% endif %}
     </div>
-    {% if 'user_message' == app.request.get('_route') %}
+    {% if 'index' == page %}
         <div class="message-control-index">
             {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
-                path('user_message_delete',
+                path('user_message_member_delete',
                     {
-                        'slug': user_message.slug,
+                        'uuid': conversation.uuid,
                     }
                 ),
                 '_delete_',
@@ -72,4 +124,8 @@
             ) }}
         </div>
     {% endif %}
-</div>
+{% if 'navbar' == page %}
+    </a>
+{% else %}
+    </div>
+{% endif %}
