@@ -66,6 +66,11 @@ document.addEventListener('submit', (e) => {
     }
 }, false)
 
+/*
+
+    Enter + Submit
+    Fonctionne mais bug : shift + entrée ne doit pas soumettre le formulaire
+
 let form = document.querySelector('#user_messenger_conversation_message_message');
 
 if (null !== form) {
@@ -79,3 +84,5 @@ if (null !== form) {
         }
     });
 }
+
+ */

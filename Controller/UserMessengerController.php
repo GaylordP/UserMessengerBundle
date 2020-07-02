@@ -298,6 +298,7 @@ class UserMessengerController extends AbstractController
     public function delete(
         Request $request,
         UserMessengerConversation $conversation,
+        UserMessengerProvider $userMessengerProvider,
         PublisherInterface $publisher
     ): Response {
         $entityManager = $this->getDoctrine()->getManager();
@@ -306,15 +307,15 @@ class UserMessengerController extends AbstractController
             ->getRepository(UserMessengerConversationUser::class)
             ->findByUserMessengerConversation($conversation)
         ;
+        $countUsers = count($users);
 
         $member = null;
 
         foreach ($users as $userMessage) {
-            if ($userMessage->getUser() !== $this->getUser()) {
+            if (2 === $countUsers && $userMessage->getUser() !== $this->getUser()) {
                 $member = $userMessage->getUser();
             }
         }
-
 
         dump('contrôler que le member appartient bien à la conversation');
 
@@ -333,6 +334,38 @@ class UserMessengerController extends AbstractController
         }
 
         $entityManager->flush();
+
+        $navbarConversations = $entityManager
+            ->getRepository(UserMessengerConversation::class)
+            ->findAllByUser($this->getUser(), 5)
+        ;
+
+        $userMessengerProvider->addExtraInfos($navbarConversations);
+
+        $messages = [];
+        foreach ($navbarConversations as $navbarConversation) {
+            $messages[] = [
+                'html' => $this->renderView('@UserMessenger/_message.html.twig', [
+                    'page' => 'navbar',
+                    'conversation' => $navbarConversation,
+                    'message' => $navbarConversation->__lastMessage,
+                    'previous_date' => null,
+                    'userPrintedThisMessage' => $this->getUser(),
+                ]),
+                'uuid' => $navbarConversation->getUuid(),
+            ];
+        }
+
+        $update = new Update(
+            'https://bubble.lgbt/user/' . $this->getUser()->getSlug(),
+            json_encode([
+                'messages' => $messages,
+            ]),
+            true,
+            null,
+            'user_messenger_refresh_navbar'
+        );
+        $publisher($update);
 
         $update = new Update(
             'https://bubble.lgbt/user/' . $this->getUser()->getSlug(),

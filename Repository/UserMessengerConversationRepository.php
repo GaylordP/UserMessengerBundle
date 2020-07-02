@@ -18,9 +18,9 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
         parent::__construct($registry, UserMessengerConversation::class);
     }
 
-    public function findAllByUser(User $userLogged): array
+    public function findAllByUser(User $userLogged, int $limit = null): array
     {
-        $results = $this
+        $qb = $this
             ->createQueryBuilder('conversation')
             ->innerJoin(UserMessengerConversationUser::class, 'messageUserLogged', 'WITH', '
                 messageUserLogged.userMessengerConversation = conversation AND
@@ -42,6 +42,13 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
                 messageLast.id AS last_message_id
             ')
             ->orderBy('messageLast.id', 'DESC')
+        ;
+
+        if (null !== $limit) {
+            $qb->setMaxResults($limit);
+        }
+
+        $results = $qb
             ->getQuery()
             ->getResult()
         ;

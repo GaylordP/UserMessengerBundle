@@ -84,6 +84,17 @@ export const EventSourceListener = (eventSource) => {
 
             container.insertBefore(messageHtml.children[0], container.firstChild)
 
+            let maxLength = 5
+            let findNavbarConversations = container.querySelectorAll('.user-messenger-dropdown-item')
+
+            if (findNavbarConversations.length > maxLength) {
+                findNavbarConversations.forEach((conversation, index) => {
+                    if (index >= maxLength) {
+                        container.removeChild(conversation)
+                    }
+                })
+            }
+
             let emptyMessage = container.querySelector('.dropdown-empty-message')
 
             if (null !== emptyMessage) {
@@ -103,6 +114,26 @@ export const EventSourceListener = (eventSource) => {
         }
     }, false)
 
+    eventSource.addEventListener('user_messenger_refresh_navbar', (e) => {
+        let data = JSON.parse(e.data)
+        let container = document.querySelector('.user-messenger-dropdown-menu')
+
+        if (null !== container) {
+            let findNavbarConversations = container.querySelectorAll('.user-messenger-dropdown-item')
+
+            findNavbarConversations.forEach((conversation) => {
+                container.removeChild(conversation)
+            })
+
+            data.messages.reverse().forEach((message) => {
+                let messageHtml = document.createElement('div')
+                messageHtml.innerHTML = message.html
+
+                container.insertBefore(messageHtml.children[0], container.firstChild)
+            })
+        }
+    }, false)
+
     eventSource.addEventListener('user_messenger_delete', (e) => {
         let data = JSON.parse(e.data)
 
@@ -113,26 +144,29 @@ export const EventSourceListener = (eventSource) => {
 
         if (null !== indexContainer) {
             let indexMessagesContainer = indexContainer.querySelector('.comments')
-            let findIndexConversation = indexMessagesContainer.querySelector('.comment.user-messenger-conversation-' + data.uuid)
 
-            if (null !== findIndexConversation) {
-                indexMessagesContainer.removeChild(findIndexConversation)
-            }
+            if (null !== indexMessagesContainer) {
+                let findIndexConversation = indexMessagesContainer.querySelector('.comment.user-messenger-conversation-' + data.uuid)
 
-            let indexLength = indexContainer.querySelectorAll('.comment').length
+                if (null !== findIndexConversation) {
+                    indexMessagesContainer.removeChild(findIndexConversation)
+                }
 
-            if (0 === indexLength) {
-                indexContainer.removeChild(indexMessagesContainer)
+                let indexLength = indexContainer.querySelectorAll('.comment').length
 
-                let indexAlert = document.createElement('div')
-                indexAlert.classList.add('alert', 'alert-danger', 'mb-0')
+                if (0 === indexLength) {
+                    indexContainer.removeChild(indexMessagesContainer)
 
-                let indexAlertP = document.createElement('p')
-                indexAlertP.classList.add('mb-0')
-                indexAlertP.innerText = indexContainer.getAttribute('data-empty-message')
+                    let indexAlert = document.createElement('div')
+                    indexAlert.classList.add('alert', 'alert-danger', 'mb-0')
 
-                indexAlert.appendChild(indexAlertP)
-                indexContainer.appendChild(indexAlert)
+                    let indexAlertP = document.createElement('p')
+                    indexAlertP.classList.add('mb-0')
+                    indexAlertP.innerText = indexContainer.getAttribute('data-empty-message')
+
+                    indexAlert.appendChild(indexAlertP)
+                    indexContainer.appendChild(indexAlert)
+                }
             }
         }
 
@@ -152,7 +186,6 @@ export const EventSourceListener = (eventSource) => {
 
             if (0 === navbarLength) {
                 let emptyMessage = navbarContainer.querySelector('.dropdown-empty-message')
-                console.log(emptyMessage)
 
                 if (null === emptyMessage) {
                     emptyMessage = document.createElement('span')
