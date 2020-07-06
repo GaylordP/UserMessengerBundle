@@ -3,6 +3,8 @@
 namespace GaylordP\UserMessengerBundle\Controller;
 
 use App\Entity\User;
+use App\Entity\UserMedia;
+use GaylordP\UserMediaBundle\Provider\UserMediaProvider;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversation;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversationMessage;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversationUser;
@@ -17,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserMessengerController extends AbstractController
 {
@@ -64,6 +67,8 @@ class UserMessengerController extends AbstractController
     public function message(
         Request $request,
         User $member,
+        UserMediaProvider $userMediaProvider,
+        TranslatorInterface$translator,
         PublisherInterface $publisher
     ): Response {
         $entityManager = $this->getDoctrine()->getManager();
@@ -122,146 +127,176 @@ class UserMessengerController extends AbstractController
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $originalConversation = $conversation;
+        if ($form->isSubmitted()) {
+            if ('upload' === $this->get('request_stack')->getMasterRequest()->get('_route')) {
+                if ($form->get('upload')->isValid()) {
+                    $userMedia = new UserMedia();
+                    $userMedia->setMedia($form->get('upload')->getData());
 
-            if (null === $conversation) {
-                $conversation = new UserMessengerConversation();
-                $conversation->setUuid(uuid_create(UUID_TYPE_RANDOM));
-                $conversation->setGroup(false);
-                $entityManager->persist($conversation);
+                    $entityManager->persist($userMedia);
+                    $entityManager->flush();
 
-                $user1 = new UserMessengerConversationUser();
-                $user1->setUser($this->getUser());
-                $user1->setReadAt(new \DateTime());
-                $user1->setUserMessengerConversation($conversation);
-                $entityManager->persist($user1);
+                    $userMediaProvider->addExtraInfos($userMedia);
 
-                $user2 = new UserMessengerConversationUser();
-                $user2->setUser($member);
-                $user2->setUserMessengerConversation($conversation);
-                $entityManager->persist($user2);
+                    $newForm = $this->createForm(UserMessengerConversationMessageType::class, $message);
 
-                $conversation->__users = [
-                    $user1,
-                    $user2
-                ];
+                    return new JsonResponse([
+                        'formHtml' => $this->renderView('@UserMessenger/_message_form.html.twig', [
+                            'form' => $newForm->createView(),
+                        ]),
+                    ], Response::HTTP_OK);
+                } else {
+                    $messageList = [];
+
+                    foreach ($form->get('upload')->getErrors(true) as $error) {
+                        $messageList[] = $translator->trans($error->getOrigin()->getConfig()->getOption('label'), [], $error->getOrigin()->getConfig()->getOption('translation_domain')) . ' : ' . $error->getMessage();
+                    }
+
+                    return new JsonResponse(implode(' ; ', $messageList), Response::HTTP_BAD_REQUEST);
+                }
             }
 
-            $message->setUserMessengerConversation($conversation);
+            if ($form->isValid()) {
+                $originalConversation = $conversation;
 
-            $entityManager->persist($message);
-            $entityManager->flush();
+                if (null === $conversation) {
+                    $conversation = new UserMessengerConversation();
+                    $conversation->setUuid(uuid_create(UUID_TYPE_RANDOM));
+                    $conversation->setGroup(false);
+                    $entityManager->persist($conversation);
 
-            if (null === $originalConversation && 2 === count($conversation->__users)) {
-                $update = new Update(
-                    'https://bubble.lgbt/user/' . $conversation->__users[0]->getUser()->getSlug(),
-                    json_encode([
-                        'tmpUuid' => $conversation->__users[0]->getUser()->getSlug() . '-' . $conversation->__users[1]->getUser()->getSlug(),
-                        'uuid' => $conversation->getUuid(),
-                        'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
-                            'conversation' => $conversation,
-                        ])
-                    ]),
-                    true,
-                    null,
-                    'user_messenger_replace_uuid'
-                );
-                $publisher($update);
+                    $user1 = new UserMessengerConversationUser();
+                    $user1->setUser($this->getUser());
+                    $user1->setReadAt(new \DateTime());
+                    $user1->setUserMessengerConversation($conversation);
+                    $entityManager->persist($user1);
 
-                $update = new Update(
-                    'https://bubble.lgbt/user/' . $conversation->__users[1]->getUser()->getSlug(),
-                    json_encode([
-                        'tmpUuid' => $conversation->__users[1]->getUser()->getSlug() . '-' . $conversation->__users[0]->getUser()->getSlug(),
-                        'uuid' => $conversation->getUuid(),
-                        'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
-                            'conversation' => $conversation,
-                        ])
-                    ]),
-                    true,
-                    null,
-                    'user_messenger_replace_uuid'
-                );
-                $publisher($update);
-            }
+                    $user2 = new UserMessengerConversationUser();
+                    $user2->setUser($member);
+                    $user2->setUserMessengerConversation($conversation);
+                    $entityManager->persist($user2);
 
-            foreach ($conversation->__users as $conversationUser) {
-                $update = new Update(
-                    'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                    json_encode([
-                        'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
-                            'page' => 'index',
-                            'conversation' => $conversation,
-                            'message' => $message,
-                            'previous_date' => null,
-                            'userPrintedThisMessage' => $conversationUser->getUser(),
+                    $conversation->__users = [
+                        $user1,
+                        $user2
+                    ];
+                }
+
+                $message->setUserMessengerConversation($conversation);
+
+                $entityManager->persist($message);
+                $entityManager->flush();
+
+                if (null === $originalConversation && 2 === count($conversation->__users)) {
+                    $update = new Update(
+                        'https://bubble.lgbt/user/' . $conversation->__users[0]->getUser()->getSlug(),
+                        json_encode([
+                            'tmpUuid' => $conversation->__users[0]->getUser()->getSlug() . '-' . $conversation->__users[1]->getUser()->getSlug(),
+                            'uuid' => $conversation->getUuid(),
+                            'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
+                                'conversation' => $conversation,
+                            ])
                         ]),
-                        'uuid' => $conversation->getUuid(),
-                    ]),
-                    true,
-                    null,
-                    'user_messenger_add_in_index_page'
-                );
-                $publisher($update);
+                        true,
+                        null,
+                        'user_messenger_replace_uuid'
+                    );
+                    $publisher($update);
 
-                $update = new Update(
-                    'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                    json_encode([
-                        'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
-                            'page' => 'navbar',
-                            'conversation' => $conversation,
-                            'message' => $message,
-                            'previous_date' => null,
-                            'userPrintedThisMessage' => $conversationUser->getUser(),
+                    $update = new Update(
+                        'https://bubble.lgbt/user/' . $conversation->__users[1]->getUser()->getSlug(),
+                        json_encode([
+                            'tmpUuid' => $conversation->__users[1]->getUser()->getSlug() . '-' . $conversation->__users[0]->getUser()->getSlug(),
+                            'uuid' => $conversation->getUuid(),
+                            'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
+                                'conversation' => $conversation,
+                            ])
                         ]),
-                        'uuid' => $conversation->getUuid(),
-                    ]),
-                    true,
-                    null,
-                    'user_messenger_add_in_navbar'
-                );
-                $publisher($update);
+                        true,
+                        null,
+                        'user_messenger_replace_uuid'
+                    );
+                    $publisher($update);
+                }
 
-                $update = new Update(
-                    'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                    json_encode([
-                        'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
-                            'page' => 'message',
-                            'conversation' => $conversation,
-                            'message' => $message,
-                            'previous_date' => null,
-                            'userPrintedThisMessage' => $conversationUser->getUser(),
-                        ]),
-                        'uuid' => $conversation->getUuid(),
-                    ]),
-                    true,
-                    null,
-                    'user_messenger_add_in_message_page'
-                );
-                $publisher($update);
-            }
-
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse([
-                    'status' => 'success',
-                ], Response::HTTP_OK);
-            } else {
-                $this->get('session')->getFlashBag()->add(
-                    'success',
-                    [
-                        'user.message.created_successfully',
-                        [
-                            '%username%' => $this->renderView('@User/button/_user.html.twig', [
-                                'user' => $member,
+                foreach ($conversation->__users as $conversationUser) {
+                    $update = new Update(
+                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
+                        json_encode([
+                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
+                                'page' => 'index',
+                                'conversation' => $conversation,
+                                'message' => $message,
+                                'previous_date' => null,
+                                'userPrintedThisMessage' => $conversationUser->getUser(),
                             ]),
-                        ],
-                        'user_messenger'
-                    ]
-                );
+                            'uuid' => $conversation->getUuid(),
+                        ]),
+                        true,
+                        null,
+                        'user_messenger_add_in_index_page'
+                    );
+                    $publisher($update);
 
-                return $this->redirectToRoute('user_message_member', [
-                    'slug' => $member->getSlug(),
-                ]);
+                    $update = new Update(
+                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
+                        json_encode([
+                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
+                                'page' => 'navbar',
+                                'conversation' => $conversation,
+                                'message' => $message,
+                                'previous_date' => null,
+                                'userPrintedThisMessage' => $conversationUser->getUser(),
+                            ]),
+                            'uuid' => $conversation->getUuid(),
+                        ]),
+                        true,
+                        null,
+                        'user_messenger_add_in_navbar'
+                    );
+                    $publisher($update);
+
+                    $update = new Update(
+                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
+                        json_encode([
+                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
+                                'page' => 'message',
+                                'conversation' => $conversation,
+                                'message' => $message,
+                                'previous_date' => null,
+                                'userPrintedThisMessage' => $conversationUser->getUser(),
+                            ]),
+                            'uuid' => $conversation->getUuid(),
+                        ]),
+                        true,
+                        null,
+                        'user_messenger_add_in_message_page'
+                    );
+                    $publisher($update);
+                }
+
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse([
+                        'status' => 'success',
+                    ], Response::HTTP_OK);
+                } else {
+                    $this->get('session')->getFlashBag()->add(
+                        'success',
+                        [
+                            'user.message.created_successfully',
+                            [
+                                '%username%' => $this->renderView('@User/button/_user.html.twig', [
+                                    'user' => $member,
+                                ]),
+                            ],
+                            'user_messenger'
+                        ]
+                    );
+
+                    return $this->redirectToRoute('user_message_member', [
+                        'slug' => $member->getSlug(),
+                    ]);
+                }
             }
         }
 
@@ -309,15 +344,22 @@ class UserMessengerController extends AbstractController
         ;
         $countUsers = count($users);
 
+        $userInConversation = false;
         $member = null;
 
         foreach ($users as $userMessage) {
+            if ($userMessage->getUser() === $this->getUser()) {
+                $userInConversation = true;
+            }
+
             if (2 === $countUsers && $userMessage->getUser() !== $this->getUser()) {
                 $member = $userMessage->getUser();
             }
         }
 
-        dump('contrôler que le member appartient bien à la conversation');
+        if (false === $userInConversation) {
+            throw $this->createNotFoundException();
+        }
 
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
             return $this->render('@UserMessenger/delete.html.twig', [

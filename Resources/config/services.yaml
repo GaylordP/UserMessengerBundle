@@ -4,6 +4,13 @@ services:
         autoconfigure: true
         autowire: true
 
+    GaylordP\UserMessengerBundle\Form\UserMessengerConversationMessageType:
+        arguments:
+            - '@security.helper'
+            - '@GaylordP\UserMediaBundle\Repository\UserMediaRepository'
+        tags:
+            - 'form.type'
+
     GaylordP\UserMessengerBundle\Provider\UserMessengerProvider:
         arguments:
             - '@security.helper'

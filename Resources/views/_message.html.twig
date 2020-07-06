@@ -2,7 +2,7 @@
 
 {% if 'index' == page or 'navbar' == page %}
     {% for conversation_user in conversation.__users %}
-        {% if conversation_user != userPrintedThisMessage %}
+        {% if conversation_user.user != userPrintedThisMessage %}
             {% set user_message_reference = conversation_user.user %}
         {% endif %}
     {% endfor %}
@@ -102,6 +102,18 @@
             {{ message.message|nl2br }}
         {% else %}
             {{  message.message|length > 50 ?  message.message|slice(0, 50) ~ '…' : message.message }}
+        {% endif %}
+        {% if message.userMedias is not empty %}
+            <div class="row gallery">
+                {% for user_media in message.userMedias %}
+                    {{ include('@UserMedia/media/item/_item.html.twig',
+                        {
+                            'user_media': user_media,
+                        },
+                        with_context = false
+                    ) }}
+                {% endfor %}
+            </div>
         {% endif %}
         {% if 'index' == page %}
             </a>

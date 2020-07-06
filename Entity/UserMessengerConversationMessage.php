@@ -42,7 +42,7 @@ class UserMessengerConversationMessage
      * @var UserMedia[]|ArrayCollection
      *
      * @ORM\ManyToMany(
-     *     targetEntity="App\Entity\UserMedia",
+     *     targetEntity="App\Entity\UserMedia"
      * )
      * @ORM\OrderBy({"id": "ASC"})
      */
@@ -133,7 +133,7 @@ class UserMessengerConversationMessage
      * 
      * @param UserMedia $userMedia
      */
-    public function removeMedia(UserMedia $userMedia): void
+    public function removeUserMedia(UserMedia $userMedia): void
     {
         $this->userMedias->removeElement($userMedia);
     }
