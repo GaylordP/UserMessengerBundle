@@ -44,7 +44,7 @@ class UserMessengerConversationMessage
      * @ORM\ManyToMany(
      *     targetEntity="App\Entity\UserMedia"
      * )
-     * @ORM\OrderBy({"id": "ASC"})
+     * @ORM\OrderBy({"id": "DESC"})
      */
     private $userMedias;
 

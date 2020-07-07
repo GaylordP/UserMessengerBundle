@@ -1,5 +1,18 @@
-{{ form_new(
-    form,
-    'action.user.message.send_short'|trans({}, 'user_messenger'),
-    include('@UserMessenger/_ico.html.twig', with_context = false)
-) }}
+{{ form_start(form) }}
+    <div>
+        {{ form_row(form.message) }}
+        {{ 'Joindre des médias (trans)'|button('secondary', 'fas fa-upload', false, {
+            'class': 'btn-sm user-messenger-toggle-user-media',
+        }) }}
+        {{ form_row(form.upload) }}
+        {{ form_row(form.userMedias) }}
+    </div>
+    {{ 'action.user.message.send_short'|trans({}, 'user_messenger')|button(
+        '_new_',
+        include('@UserMessenger/_ico.html.twig', with_context = false),
+        false,
+        {
+            'type': 'submit',
+        }
+    ) }}
+{{ form_end(form) }}

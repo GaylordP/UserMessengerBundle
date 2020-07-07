@@ -47,6 +47,9 @@ class UserMessengerConversationMessageType extends AbstractType
                 'label' => 'label.media',
                 'translation_domain' => 'user_media',
                 'mapped' => false,
+                'row_attr' => [
+                    'class' => 'd-none',
+                ],
             ])
             ->add('userMedias', null, [
                 'label' => false,
@@ -54,6 +57,9 @@ class UserMessengerConversationMessageType extends AbstractType
                 'expanded' => true,
                 'multiple' => true,
                 'choice_label' => false,
+                'row_attr' => [
+                    'class' => 'd-none',
+                ],
             ])
         ;
     }

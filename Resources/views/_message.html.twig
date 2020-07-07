@@ -122,7 +122,7 @@
     {% if 'index' == page %}
         <div class="message-control-index">
             {{ 'action.user.message.delete'|trans({}, 'user_messenger')|button_link(
-                path('user_message_member_delete',
+                path('user_message_delete',
                     {
                         'uuid': conversation.uuid,
                     }

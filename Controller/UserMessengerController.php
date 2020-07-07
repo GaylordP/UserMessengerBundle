@@ -103,6 +103,9 @@ class UserMessengerController extends AbstractController
                     $entityManager->flush();
                 }
 
+                /*
+                 * Ligne clairement bizarre puisque lastMessage ne sera jamais égal à l'utilisateur courant
+                 */
                 if ($lastMessage === $this->getUser()) {
                     $update = new Update(
                         'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
@@ -297,24 +300,22 @@ class UserMessengerController extends AbstractController
                         'slug' => $member->getSlug(),
                     ]);
                 }
+            } elseif($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'status' => 'form_error',
+                    'formHtml' => $this->renderView('@UserMessenger/_message_form.html.twig', [
+                        'form' => $form->createView(),
+                    ]),
+                ], Response::HTTP_OK);
             }
         }
 
-        if ($request->isXmlHttpRequest() && $form->isSubmitted()) {
-            return new JsonResponse([
-                'status' => 'form_error',
-                'formHtml' => $this->renderView('@UserMessenger/_message_form.html.twig', [
-                    'form' => $form->createView(),
-                ]),
-            ], Response::HTTP_OK);
-        } else {
-            return $this->render('@UserMessenger/message.html.twig', [
-                'member' => $member,
-                'conversation' => $conversation,
-                'messages' => $messages ?? [],
-                'form' => $form->createView(),
-            ]);
-        }
+        return $this->render('@UserMessenger/message.html.twig', [
+            'member' => $member,
+            'conversation' => $conversation,
+            'messages' => $messages ?? [],
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
@@ -322,7 +323,7 @@ class UserMessengerController extends AbstractController
      *     {
      *         "fr": "/user/message/{uuid}/delete",
      *     },
-     *     name="user_message_member_delete",
+     *     name="user_message_delete",
      *     methods=
      *     {
      *         "GET",
