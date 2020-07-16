@@ -4,7 +4,6 @@ namespace GaylordP\UserMessengerBundle\Controller;
 
 use App\Entity\User;
 use App\Entity\UserMedia;
-use GaylordP\UserMediaBundle\Provider\UserMediaProvider;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversation;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversationMessage;
 use GaylordP\UserMessengerBundle\Entity\UserMessengerConversationUser;
@@ -67,9 +66,9 @@ class UserMessengerController extends AbstractController
     public function message(
         Request $request,
         User $member,
-        UserMediaProvider $userMediaProvider,
         TranslatorInterface$translator,
-        PublisherInterface $publisher
+        PublisherInterface $publisher,
+        UserMessengerProvider $userMessengerProvider
     ): Response {
         $entityManager = $this->getDoctrine()->getManager();
 
@@ -94,31 +93,9 @@ class UserMessengerController extends AbstractController
                 ->findByUserMessengerConversationAndUser($this->getUser(), $conversation)
             ;
 
-            $lastMessage = !empty($messages) ? $messages[array_key_last($messages)] : null;
+            $conversation->__lastMessage = !empty($messages) ? $messages[array_key_last($messages)] : null;
 
-            foreach ($conversation->__users as $conversationUser) {
-                if ($conversationUser->getUser() === $this->getUser()) {
-                    $conversationUser->setReadAt(new \DateTime());
-
-                    $entityManager->flush();
-                }
-
-                /*
-                 * Ligne clairement bizarre puisque lastMessage ne sera jamais égal à l'utilisateur courant
-                 */
-                if ($lastMessage === $this->getUser()) {
-                    $update = new Update(
-                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                        json_encode([
-                            'uuid' => $conversation->getUuid(),
-                        ]),
-                        true,
-                        null,
-                        'user_messenger_read'
-                    );
-                    $publisher($update);
-                }
-            }
+            $this->read($conversation, $publisher, $userMessengerProvider);
         }
 
         $message = new UserMessengerConversationMessage();
@@ -138,8 +115,6 @@ class UserMessengerController extends AbstractController
 
                     $entityManager->persist($userMedia);
                     $entityManager->flush();
-
-                    $userMediaProvider->addExtraInfos($userMedia);
 
                     $newForm = $this->createForm(UserMessengerConversationMessageType::class, $message);
 
@@ -269,6 +244,7 @@ class UserMessengerController extends AbstractController
                                 'previous_date' => null,
                                 'userPrintedThisMessage' => $conversationUser->getUser(),
                             ]),
+                            'sender_or_recipient' => $this->getUser() === $conversationUser->getUser() ? 'sender' : 'recipient',
                             'uuid' => $conversation->getUuid(),
                         ]),
                         true,
@@ -316,6 +292,79 @@ class UserMessengerController extends AbstractController
             'messages' => $messages ?? [],
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route(
+     *     {
+     *         "fr": "/user/message/{uuid}/read",
+     *     },
+     *     name="user_message_read",
+     *     methods=
+     *     {
+     *         "GET",
+     *     },
+     *     condition="true === request.isXmlHttpRequest()"
+     * )
+     */
+    public function read(
+        UserMessengerConversation $conversation,
+        PublisherInterface $publisher,
+        UserMessengerProvider $userMessengerProvider
+    ): Response {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $users = $entityManager
+            ->getRepository(UserMessengerConversationUser::class)
+            ->findByUserMessengerConversation($conversation)
+        ;
+
+        $userInConversation = false;
+
+        foreach ($users as $userMessage) {
+            if ($userMessage->getUser() === $this->getUser()) {
+                $userInConversation = true;
+            }
+        }
+
+        if (false === $userInConversation) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
+        $userMessengerProvider->addExtraInfos($conversation);
+
+        foreach ($conversation->__users as $conversationUser) {
+            if ($conversationUser->getUser() === $this->getUser()) {
+                if (
+                    null !== $conversation->__lastMessage
+                        &&
+                    2 === count($conversation->__users)
+                        &&
+                    $conversation->__lastMessage->getCreatedBy() !== $this->getUser()
+                        &&
+                    $conversation->__lastMessage->getCreatedAt() > $conversationUser->getReadAt()
+                ) {
+                    foreach ($conversation->__users as $conversationUserMercure) {
+                        $update = new Update(
+                            'https://bubble.lgbt/user/' . $conversationUserMercure->getUser()->getSlug(),
+                            json_encode([
+                                'uuid' => $conversation->getUuid(),
+                            ]),
+                            true,
+                            null,
+                            'user_messenger_read'
+                        );
+                        $publisher($update);
+                    }
+                }
+
+                $conversationUser->setReadAt(new \DateTime());
+
+                $entityManager->flush();
+            }
+        }
+
+        return new JsonResponse(null, Response::HTTP_OK);
     }
 
     /**

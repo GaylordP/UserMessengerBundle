@@ -5,6 +5,7 @@ export const EventSourceListener = (eventSource) => {
 
         if (null !== container) {
             container.id = 'user-messenger-conversation-' + data.uuid
+            container.setAttribute('data-read-link', container.getAttribute('data-read-link').replace(data.tmpUuid, data.uuid))
 
             let deleteLinkHtml = document.createElement('div')
             deleteLinkHtml.innerHTML = data.delete_link
@@ -64,6 +65,13 @@ export const EventSourceListener = (eventSource) => {
 
             } else {
                 container.appendChild(messageHtml.children[1])
+            }
+
+            if ('recipient' === data.sender_or_recipient) {
+                let httpRequest = new XMLHttpRequest()
+                httpRequest.open('GET', container.getAttribute('data-read-link'))
+                httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+                httpRequest.send()
             }
         }
     }, false)
@@ -191,7 +199,6 @@ export const EventSourceListener = (eventSource) => {
                     emptyMessage = document.createElement('span')
                     emptyMessage.classList.add('dropdown-item', 'dropdown-empty-message')
                     emptyMessage.innerText = navbarContainer.getAttribute('data-empty-message')
-                    console.log(emptyMessage)
 
                     navbarContainer.appendChild(emptyMessage)
                 }

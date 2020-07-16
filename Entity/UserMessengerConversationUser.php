@@ -29,6 +29,7 @@ class UserMessengerConversationUser
      *
      * @ORM\ManyToOne(
      *     targetEntity="App\Entity\User",
+     *     fetch="EAGER"
      * )
      * @Assert\NotBlank()
      */

@@ -1,11 +1,30 @@
-#dropzone-user_messenger_conversation_message_upload {
+.comments > form[name="user_messenger_conversation_message"] > div:first-of-type > *:not(:first-child) {
     margin-top: .5rem;
-    margin-bottom: .25rem;
+}
+
+.comments > form[name="user_messenger_conversation_message"] > div:first-of-type > .dropzone > div.upload-item:first-of-type {
+    margin-top: .5rem;
+}
+
+.comments > form[name="user_messenger_conversation_message"] > div:first-of-type > .dropzone > div.upload-item:last-of-type {
+    padding-bottom: 0;
+}
+
+.comments > form[name="user_messenger_conversation_message"] > div:first-of-type > .dropzone > div.upload-item.dz-success {
+    display: none;
+}
+
+.comments > form[name="user_messenger_conversation_message"] > div:first-of-type > fieldset.form-group {
+    margin-top: 0;
 }
 
 .row.user-messenger-form-user-media {
-    margin: 0 -.25rem -.25rem -.25rem;
+    margin: -.25rem;
     cursor: pointer;
+}
+
+.row.user-messenger-form-user-media:first-of-type {
+    margin-top: .25rem;
 }
 
 .row.user-messenger-form-user-media > div {

@@ -100,20 +100,32 @@
         {% endif %}
         {% if 'navbar' != page %}
             {{ message.message|nl2br }}
+            {% if message.userMedias is not empty %}
+                <div class="row gallery">
+                    {% for user_media in message.userMedias %}
+                        {{ include('@UserMedia/media/item/_item.html.twig',
+                            {
+                                'user_media': user_media,
+                                'col': ' col-6 col-md-3 col-lg-2',
+                            },
+                            with_context = false
+                        ) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% else %}
             {{  message.message|length > 50 ?  message.message|slice(0, 50) ~ '…' : message.message }}
-        {% endif %}
-        {% if message.userMedias is not empty %}
-            <div class="row gallery">
-                {% for user_media in message.userMedias %}
-                    {{ include('@UserMedia/media/item/_item.html.twig',
+            {% if message.userMedias is not empty %}
+                <br>
+                <span class="small">
+                    {{ 'navbar.message.user_media'|trans(
                         {
-                            'user_media': user_media,
+                            '%count%': message.userMedias|length,
                         },
-                        with_context = false
+                        'user_messenger'
                     ) }}
-                {% endfor %}
-            </div>
+                </span>
+            {% endif %}
         {% endif %}
         {% if 'index' == page %}
             </a>

@@ -10,6 +10,10 @@
                 <source>action.user.message.delete</source>
                 <target>Supprimer la conversation</target>
             </trans-unit>
+            <trans-unit id="action.user.message.join.user_media">
+                <source>action.user.message.join.user_media</source>
+                <target>Joindre des médias</target>
+            </trans-unit>
             <trans-unit id="action.user.message.send">
                 <source>action.user.message.send</source>
                 <target>Envoyer un message</target>
@@ -30,6 +34,11 @@
             <trans-unit id="label.unread">
                 <source>label.unread</source>
                 <target>Non lu</target>
+            </trans-unit>
+
+            <trans-unit id="navbar.message.user_media">
+                <source>navbar.message.user_media</source>
+                <target>{1} Un média joint|]1,Inf] %count% médias joints</target>
             </trans-unit>
 
             <trans-unit id="title.user.message">

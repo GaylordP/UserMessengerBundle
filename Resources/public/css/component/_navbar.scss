@@ -30,8 +30,8 @@
     background-color: $gray-300;
 }
 
-.user-messenger-dropdown-menu > *:last-of-type {
-    border-left: none !important;
+.user-messenger-dropdown-menu > .dropdown-item:last-child {
+    border-left: none;
     padding-top: .5rem;
     padding-bottom: .5rem;
     text-align: center;

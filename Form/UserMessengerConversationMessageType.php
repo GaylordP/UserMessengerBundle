@@ -44,7 +44,7 @@ class UserMessengerConversationMessageType extends AbstractType
                 'translation_domain' => 'user_messenger',
             ])
             ->add('upload', UploadType::class, [
-                'label' => 'label.media',
+                'label' => false,
                 'translation_domain' => 'user_media',
                 'mapped' => false,
                 'row_attr' => [

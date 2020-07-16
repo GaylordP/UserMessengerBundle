@@ -1,4 +1,5 @@
 import CheckboxBorder from './_message_user_media'
+import LoadUpload from './_message_user_media_upload'
 
 const SendForm = (form) => {
     let user_messenger_conversation_message_message = form.querySelector('#user_messenger_conversation_message_message')
@@ -48,10 +49,23 @@ const SendForm = (form) => {
                     CheckboxBorder(userMedia, input)
                 })
             } else if ('form_error' === json.status) {
+                let userMediaIsOpened = false
+
+                if (false === document.querySelector('#dropzone-user_messenger_conversation_message_upload').classList.contains('d-none')) {
+                    userMediaIsOpened = true
+                }
+
                 let formHtml = document.createElement('div')
                 formHtml.innerHTML = json.formHtml
 
                 form.replaceWith(formHtml.firstChild)
+                LoadUpload()
+
+                if (true === userMediaIsOpened) {
+                    document.querySelector('.user-messenger-toggle-user-media').classList.add('d-none')
+                    document.querySelector('#dropzone-user_messenger_conversation_message_upload').classList.remove('d-none')
+                    document.querySelector('.user-messenger-form-user-media').parentNode.classList.remove('d-none')
+                }
 
                 let userMedias = document.querySelectorAll('.user-messenger-form-user-media-entry')
 

@@ -27,7 +27,11 @@
 
 {% block content %}
     <div id="message-user-messenger">
-        <div class="comments" id="user-messenger-conversation-{% if conversation.uuid is defined %}{{ conversation.uuid }}{% else %}{{ app.user.slug }}-{{ member.slug }}{% endif %}">
+        <div class="comments" id="user-messenger-conversation-{% if conversation.uuid is defined %}{{ conversation.uuid }}{% else %}{{ app.user.slug }}-{{ member.slug }}{% endif %}" data-read-link="{{ path('user_message_read',
+            {
+                'uuid': conversation.uuid is defined ? conversation.uuid : app.user.slug ~ '-' ~ member.slug,
+            }
+        ) }}">
             {{ include('@UserMessenger/_message_form.html.twig',
                 {
                     'form': form,

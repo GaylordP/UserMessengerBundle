@@ -16,6 +16,22 @@ class UserMessengerConversationMessageRepository extends ServiceEntityRepository
         parent::__construct($registry, UserMessengerConversationMessage::class);
     }
 
+    public function findById(array $ids): array
+    {
+        return $this
+            ->createQueryBuilder('message')
+            ->leftJoin('message.userMedias', 'messageUserMedias')
+            ->andWhere('message.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->select('
+                message,
+                messageUserMedias
+            ')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findByUserMessengerConversationAndUser(User $userLogged, UserMessengerConversation $conversation): array
     {
         return $this
@@ -24,13 +40,15 @@ class UserMessengerConversationMessageRepository extends ServiceEntityRepository
                 messageUserLogged.userMessengerConversation = message.userMessengerConversation AND
                 messageUserLogged.user = :userLogged
             ')
+            ->leftJoin('message.userMedias', 'messageUserMedias')
             ->andWhere('message.userMessengerConversation = :conversation')
             ->andWhere('(messageUserLogged.deletedBeforeAt IS NULL OR (message.createdAt > messageUserLogged.deletedBeforeAt))')
             ->andWhere('(messageUserLogged.deletedBeforeAt IS NULL OR (message.createdAt > messageUserLogged.deletedBeforeAt))')
             ->setParameter('conversation', $conversation)
             ->setParameter('userLogged', $userLogged)
             ->select('
-                message
+                message,
+                messageUserMedias
             ')
             ->orderBy('message.id', 'ASC')
             ->getQuery()

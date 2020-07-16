@@ -42,7 +42,8 @@ class UserMessengerConversationMessage
      * @var UserMedia[]|ArrayCollection
      *
      * @ORM\ManyToMany(
-     *     targetEntity="App\Entity\UserMedia"
+     *     targetEntity="App\Entity\UserMedia",
+     *     fetch="EAGER"
      * )
      * @ORM\OrderBy({"id": "DESC"})
      */
@@ -68,7 +69,9 @@ class UserMessengerConversationMessage
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\ManyToOne(
+     *     targetEntity="App\Entity\User"
+     * )
      * @CreatedBy
      */
     private $createdBy;
