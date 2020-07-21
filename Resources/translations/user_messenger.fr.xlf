@@ -36,6 +36,11 @@
                 <target>Non lu</target>
             </trans-unit>
 
+            <trans-unit id="menu.user.message">
+                <source>menu.user.message</source>
+                <target>Messages</target>
+            </trans-unit>
+
             <trans-unit id="navbar.message.user_media">
                 <source>navbar.message.user_media</source>
                 <target>{1} Un média joint|]1,Inf] %count% médias joints</target>
