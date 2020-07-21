@@ -32,14 +32,14 @@
                 'uuid': conversation.uuid is defined ? conversation.uuid : app.user.slug ~ '-' ~ member.slug,
             }
         ) }}">
-            {{ include('@UserMessenger/_message_form.html.twig',
+            {{ include('@UserMessenger/include/_message_form.html.twig',
                 {
                     'form': form,
                 },
                 with_context = false
             ) }}
             {% if conversation is not empty %}
-                {{ include('@UserMessenger/_delete_link.html.twig',
+                {{ include('@UserMessenger/include/_delete_link.html.twig',
                     {
                         'conversation': conversation,
                     },
@@ -47,7 +47,7 @@
                 ) }}
             {% endif %}
             {% for message in messages %}
-                {{ include('@UserMessenger/_message.html.twig',
+                {{ include('@UserMessenger/include/_message.html.twig',
                     {
                         'page': 'message',
                         'conversation': conversation,

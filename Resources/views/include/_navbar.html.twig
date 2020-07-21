@@ -7,7 +7,7 @@
         'user_message_delete',
     ] %} active{% endif %}">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUserMessenger" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="{{ include('@UserMessenger/_ico.html.twig', with_context = false) }}"></i>
+            <i class="{{ include('@UserMessenger/include/_ico.html.twig', with_context = false) }}"></i>
             <span class="badge badge-user-message-unread badge-{% if 0  == count_user_message_unread() %}secondary{% else %}danger{% endif %}">
                 {{ count_user_message_unread() }}
             </span>
@@ -16,7 +16,7 @@
             {% set conversations = user_messenger() %}
             {% if conversations is not empty %}
                 {% for conversation in conversations %}
-                    {{ include('@UserMessenger/_message.html.twig',
+                    {{ include('@UserMessenger/include/_message.html.twig',
                         {
                             'page': 'navbar',
                             'conversation': conversation,

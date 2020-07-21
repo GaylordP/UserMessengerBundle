@@ -23,18 +23,18 @@
 - [X] La soumission d'un formulaire valide RESET le formulaire et retire la sélection les médias
 
 ## Lecture de conversation :
-- [X] L'expédition d'un message affiche "non lu" en gris (= non lu par l'expéditeur)
-- [X] Pour celui qui reçoit le message, un "non lu" rouge s'affiche
-- [X] Une fois lu, un message "lu" s'affiche en vert pour celui qui reçoit le message
-- [X] Une fois lu, un message "lu" s'affiche en gris pour celui qui a envoyé le message
-- [X] Si la conversation est déjà ouverte par celui qui reçoit le message, alors ça passe directement à "lu"
-- [X] Vérifier au deux niveaux : INDEX et NAVBAR
+- [ ] L'expédition d'un message affiche "non lu" en gris (= non lu par l'expéditeur)
+- [ ] Pour celui qui reçoit le message, un "non lu" rouge s'affiche
+- [ ] Une fois lu, un message "lu" s'affiche en vert pour celui qui reçoit le message
+- [ ] Une fois lu, un message "lu" s'affiche en gris pour celui qui a envoyé le message
+- [ ] Si la conversation est déjà ouverte par celui qui reçoit le message, alors ça passe directement à "lu"
+- [ ] Vérifier au deux niveaux : INDEX et NAVBAR
 
 ## Autre :
-- [X] On ne peut pas s'envoyer de message à soi-même
+- [ ] On ne peut pas s'envoyer de message à soi-même
 
 ## SQL :
-- [X] Vérifier les requêtes MySQL
+- [ ] Vérifier les requêtes MySQL
 
 // voir pour la date
 // couleur/lien de la conversation

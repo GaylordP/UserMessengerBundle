@@ -116,10 +116,14 @@ class UserMessengerController extends AbstractController
                     $entityManager->persist($userMedia);
                     $entityManager->flush();
 
-                    $newForm = $this->createForm(UserMessengerConversationMessageType::class, $message);
+                    $newForm = $this->createForm(UserMessengerConversationMessageType::class, $message, [
+                        'attr' => [
+                            'action' => $request->getRequestUri(),
+                        ]
+                    ]);
 
                     return new JsonResponse([
-                        'formHtml' => $this->renderView('@UserMessenger/_message_form.html.twig', [
+                        'formHtml' => $this->renderView('@UserMessenger/include/_message_form.html.twig', [
                             'form' => $newForm->createView(),
                         ]),
                     ], Response::HTTP_OK);
@@ -171,7 +175,7 @@ class UserMessengerController extends AbstractController
                         json_encode([
                             'tmpUuid' => $conversation->__users[0]->getUser()->getSlug() . '-' . $conversation->__users[1]->getUser()->getSlug(),
                             'uuid' => $conversation->getUuid(),
-                            'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
+                            'delete_link' => $this->renderView('@UserMessenger/include/_delete_link.html.twig', [
                                 'conversation' => $conversation,
                             ])
                         ]),
@@ -186,7 +190,7 @@ class UserMessengerController extends AbstractController
                         json_encode([
                             'tmpUuid' => $conversation->__users[1]->getUser()->getSlug() . '-' . $conversation->__users[0]->getUser()->getSlug(),
                             'uuid' => $conversation->getUuid(),
-                            'delete_link' => $this->renderView('@UserMessenger/_delete_link.html.twig', [
+                            'delete_link' => $this->renderView('@UserMessenger/include/_delete_link.html.twig', [
                                 'conversation' => $conversation,
                             ])
                         ]),
@@ -201,55 +205,33 @@ class UserMessengerController extends AbstractController
                     $update = new Update(
                         'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
                         json_encode([
-                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
-                                'page' => 'index',
-                                'conversation' => $conversation,
-                                'message' => $message,
-                                'previous_date' => null,
-                                'userPrintedThisMessage' => $conversationUser->getUser(),
-                            ]),
                             'uuid' => $conversation->getUuid(),
-                        ]),
-                        true,
-                        null,
-                        'user_messenger_add_in_index_page'
-                    );
-                    $publisher($update);
-
-                    $update = new Update(
-                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                        json_encode([
-                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
+                            'sender_or_recipient' => $this->getUser() === $conversationUser->getUser() ? 'sender' : 'recipient',
+                            'navbar' => $this->renderView('@UserMessenger/include/_message.html.twig', [
                                 'page' => 'navbar',
                                 'conversation' => $conversation,
                                 'message' => $message,
                                 'previous_date' => null,
                                 'userPrintedThisMessage' => $conversationUser->getUser(),
                             ]),
-                            'uuid' => $conversation->getUuid(),
-                        ]),
-                        true,
-                        null,
-                        'user_messenger_add_in_navbar'
-                    );
-                    $publisher($update);
-
-                    $update = new Update(
-                        'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
-                        json_encode([
-                            'messageHtml' => $this->renderView('@UserMessenger/_message.html.twig', [
+                            'index' => $this->renderView('@UserMessenger/include/_message.html.twig', [
+                                'page' => 'index',
+                                'conversation' => $conversation,
+                                'message' => $message,
+                                'previous_date' => null,
+                                'userPrintedThisMessage' => $conversationUser->getUser(),
+                            ]),
+                            'message' => $this->renderView('@UserMessenger/include/_message.html.twig', [
                                 'page' => 'message',
                                 'conversation' => $conversation,
                                 'message' => $message,
                                 'previous_date' => null,
                                 'userPrintedThisMessage' => $conversationUser->getUser(),
                             ]),
-                            'sender_or_recipient' => $this->getUser() === $conversationUser->getUser() ? 'sender' : 'recipient',
-                            'uuid' => $conversation->getUuid(),
                         ]),
                         true,
                         null,
-                        'user_messenger_add_in_message_page'
+                        'user_messenger_add'
                     );
                     $publisher($update);
                 }
@@ -279,7 +261,7 @@ class UserMessengerController extends AbstractController
             } elseif($request->isXmlHttpRequest()) {
                 return new JsonResponse([
                     'status' => 'form_error',
-                    'formHtml' => $this->renderView('@UserMessenger/_message_form.html.twig', [
+                    'formHtml' => $this->renderView('@UserMessenger/include/_message_form.html.twig', [
                         'form' => $form->createView(),
                     ]),
                 ], Response::HTTP_OK);
@@ -314,24 +296,11 @@ class UserMessengerController extends AbstractController
     ): Response {
         $entityManager = $this->getDoctrine()->getManager();
 
-        $users = $entityManager
-            ->getRepository(UserMessengerConversationUser::class)
-            ->findByUserMessengerConversation($conversation)
-        ;
+        $userMessengerProvider->addExtraInfos($conversation);
 
-        $userInConversation = false;
-
-        foreach ($users as $userMessage) {
-            if ($userMessage->getUser() === $this->getUser()) {
-                $userInConversation = true;
-            }
-        }
-
-        if (false === $userInConversation) {
+        if (false === $this->userIsInConversation($conversation)) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
-
-        $userMessengerProvider->addExtraInfos($conversation);
 
         foreach ($conversation->__users as $conversationUser) {
             if ($conversationUser->getUser() === $this->getUser()) {
@@ -388,26 +357,18 @@ class UserMessengerController extends AbstractController
     ): Response {
         $entityManager = $this->getDoctrine()->getManager();
 
-        $users = $entityManager
-            ->getRepository(UserMessengerConversationUser::class)
-            ->findByUserMessengerConversation($conversation)
-        ;
-        $countUsers = count($users);
+        $userMessengerProvider->addExtraInfos($conversation);
 
-        $userInConversation = false;
         $member = null;
-
-        foreach ($users as $userMessage) {
-            if ($userMessage->getUser() === $this->getUser()) {
-                $userInConversation = true;
-            }
-
-            if (2 === $countUsers && $userMessage->getUser() !== $this->getUser()) {
-                $member = $userMessage->getUser();
+        if (2 === count($conversation->__users)) {
+            foreach ($conversation->__users as $userMessage) {
+                if ($userMessage->getUser() !== $this->getUser()) {
+                    $member = $userMessage->getUser();
+                }
             }
         }
 
-        if (false === $userInConversation) {
+        if (false === $this->userIsInConversation($conversation)) {
             throw $this->createNotFoundException();
         }
 
@@ -418,7 +379,7 @@ class UserMessengerController extends AbstractController
             ]);
         }
 
-        foreach ($users as $userMessage) {
+        foreach ($conversation->__users as $userMessage) {
             if ($userMessage->getUser() === $this->getUser()) {
                 $userMessage->setDeletedBeforeBy($this->getUser());
                 $userMessage->setDeletedBeforeAt(new \DateTime());
@@ -437,7 +398,7 @@ class UserMessengerController extends AbstractController
         $messages = [];
         foreach ($navbarConversations as $navbarConversation) {
             $messages[] = [
-                'html' => $this->renderView('@UserMessenger/_message.html.twig', [
+                'html' => $this->renderView('@UserMessenger/include/_message.html.twig', [
                     'page' => 'navbar',
                     'conversation' => $navbarConversation,
                     'message' => $navbarConversation->__lastMessage,
@@ -484,5 +445,18 @@ class UserMessengerController extends AbstractController
         );
 
         return $this->redirectToRoute('user_message');
+    }
+
+    private function userIsInConversation(UserMessengerConversation $conversation): bool
+    {
+        $userInConversation = false;
+
+        foreach ($conversation->__users as $userMessage) {
+            if ($userMessage->getUser() === $this->getUser()) {
+                $userInConversation = true;
+            }
+        }
+
+        return $userInConversation;
     }
 }

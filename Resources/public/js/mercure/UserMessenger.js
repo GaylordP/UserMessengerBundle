@@ -1,3 +1,108 @@
+const AddMessageInIndexPage = (uuid, messageHtml) => {
+    let container = document.querySelector('#index-user-messenger')
+
+    if (null !== container) {
+        let alert = container.querySelector('.alert')
+        let findIndexConversation = container.querySelector('.comment.user-messenger-conversation-' + uuid)
+
+        if (null !== alert) {
+            container = document.createElement('div')
+            container.classList.add('comments')
+
+            alert.replaceWith(container)
+        } else {
+            container = container.querySelector('.comments')
+        }
+
+        if (null !== findIndexConversation) {
+            container.removeChild(findIndexConversation)
+        }
+
+        let containerMessageHtml = document.createElement('div')
+        containerMessageHtml.innerHTML = messageHtml
+
+        let findTitleDate = container.querySelector('h2.message-title[data-title-user-messenger-date="' + containerMessageHtml.children[0].getAttribute('data-title-user-messenger-date') + '"]')
+
+        if (null === findTitleDate) {
+            container.insertBefore(containerMessageHtml.children[1], container.firstChild)
+            container.insertBefore(containerMessageHtml.children[0], container.firstChild)
+        } else {
+            container.insertBefore(containerMessageHtml.children[1], findTitleDate.nextSibling)
+        }
+    }
+}
+
+const AddMessageInNavbarPage = (uuid, messageHtml) => {
+    let container = document.querySelector('.user-messenger-dropdown-menu')
+
+    if (null !== container) {
+        let findNavbarConversation = container.querySelector('.user-messenger-dropdown-item.user-messenger-conversation-' + uuid)
+
+        if (null !== findNavbarConversation) {
+            container.removeChild(findNavbarConversation)
+        }
+
+        let containerMessageHtml = document.createElement('div')
+        containerMessageHtml.innerHTML = messageHtml
+
+        container.insertBefore(containerMessageHtml.children[0], container.firstChild)
+
+        let maxLength = 5
+        let findNavbarConversations = container.querySelectorAll('.user-messenger-dropdown-item')
+
+        if (findNavbarConversations.length > maxLength) {
+            findNavbarConversations.forEach((conversation, index) => {
+                if (index >= maxLength) {
+                    container.removeChild(conversation)
+                }
+            })
+        }
+
+        let emptyMessage = container.querySelector('.dropdown-empty-message')
+
+        if (null !== emptyMessage) {
+            container.removeChild(emptyMessage)
+        }
+
+        let goMessage = container.querySelector('.dropdown-go-message')
+
+        if (null === goMessage) {
+            goMessage = document.createElement('a')
+            goMessage.classList.add('dropdown-item', 'dropdown-go-message')
+            goMessage.setAttribute('href', container.getAttribute('data-go-message-url'))
+            goMessage.innerText = container.getAttribute('data-go-message')
+
+            container.appendChild(goMessage)
+        }
+    }
+}
+
+const AddMessageInMessagePage = (uuid, messageHtml, sender_or_recipient) => {
+    let container = document.querySelector('#message-user-messenger > .comments[id="user-messenger-conversation-' + uuid +'"]')
+
+    if (null !== container) {
+        let containerMessageHtml = document.createElement('div')
+        containerMessageHtml.innerHTML = messageHtml
+
+        let findTitleDate = container.querySelector('h2.message-title[data-title-user-messenger-date="' + containerMessageHtml.children[0].getAttribute('data-title-user-messenger-date') + '"]')
+
+        if (null === findTitleDate) {
+            container.appendChild(containerMessageHtml.children[0])
+            container.appendChild(containerMessageHtml.children[0])
+
+        } else {
+            container.appendChild(containerMessageHtml.children[1])
+        }
+
+        if ('recipient' === sender_or_recipient) {
+            let httpRequest = new XMLHttpRequest()
+            httpRequest.open('GET', container.getAttribute('data-read-link'))
+            httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+            httpRequest.send()
+        }
+    }
+}
+
 export const EventSourceListener = (eventSource) => {
     eventSource.addEventListener('user_messenger_replace_uuid', (e) => {
         let data = JSON.parse(e.data)
@@ -14,112 +119,12 @@ export const EventSourceListener = (eventSource) => {
         }
     }, false)
 
-    eventSource.addEventListener('user_messenger_add_in_index_page', (e) => {
+    eventSource.addEventListener('user_messenger_add', (e) => {
         let data = JSON.parse(e.data)
-        let container = document.querySelector('#index-user-messenger')
 
-        if (null !== container) {
-            let alert = container.querySelector('.alert')
-            let findIndexConversation = container.querySelector('.comment.user-messenger-conversation-' + data.uuid)
-
-            if (null !== alert) {
-                container = document.createElement('div')
-                container.classList.add('comments')
-
-                alert.replaceWith(container)
-            } else {
-                container = container.querySelector('.comments')
-            }
-
-            if (null !== findIndexConversation) {
-                container.removeChild(findIndexConversation)
-            }
-
-            let messageHtml = document.createElement('div')
-            messageHtml.innerHTML = data.messageHtml
-
-            let findTitleDate = container.querySelector('h2.message-title[data-title-user-messenger-date="' + messageHtml.children[0].getAttribute('data-title-user-messenger-date') + '"]')
-
-            if (null === findTitleDate) {
-                container.insertBefore(messageHtml.children[1], container.firstChild)
-                container.insertBefore(messageHtml.children[0], container.firstChild)
-            } else {
-                container.insertBefore(messageHtml.children[1], findTitleDate.nextSibling)
-            }
-        }
-    }, false)
-
-    eventSource.addEventListener('user_messenger_add_in_message_page', (e) => {
-        let data = JSON.parse(e.data)
-        let container = document.querySelector('#message-user-messenger > .comments[id="user-messenger-conversation-' + data.uuid +'"]')
-
-        if (null !== container) {
-            let messageHtml = document.createElement('div')
-            messageHtml.innerHTML = data.messageHtml
-
-            let findTitleDate = container.querySelector('h2.message-title[data-title-user-messenger-date="' + messageHtml.children[0].getAttribute('data-title-user-messenger-date') + '"]')
-
-            if (null === findTitleDate) {
-                container.appendChild(messageHtml.children[0])
-                container.appendChild(messageHtml.children[0])
-
-            } else {
-                container.appendChild(messageHtml.children[1])
-            }
-
-            if ('recipient' === data.sender_or_recipient) {
-                let httpRequest = new XMLHttpRequest()
-                httpRequest.open('GET', container.getAttribute('data-read-link'))
-                httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-                httpRequest.send()
-            }
-        }
-    }, false)
-
-    eventSource.addEventListener('user_messenger_add_in_navbar', (e) => {
-        let data = JSON.parse(e.data)
-        let container = document.querySelector('.user-messenger-dropdown-menu')
-
-        if (null !== container) {
-            let findNavbarConversation = container.querySelector('.user-messenger-dropdown-item.user-messenger-conversation-' + data.uuid)
-
-            if (null !== findNavbarConversation) {
-                container.removeChild(findNavbarConversation)
-            }
-
-            let messageHtml = document.createElement('div')
-            messageHtml.innerHTML = data.messageHtml
-
-            container.insertBefore(messageHtml.children[0], container.firstChild)
-
-            let maxLength = 5
-            let findNavbarConversations = container.querySelectorAll('.user-messenger-dropdown-item')
-
-            if (findNavbarConversations.length > maxLength) {
-                findNavbarConversations.forEach((conversation, index) => {
-                    if (index >= maxLength) {
-                        container.removeChild(conversation)
-                    }
-                })
-            }
-
-            let emptyMessage = container.querySelector('.dropdown-empty-message')
-
-            if (null !== emptyMessage) {
-                container.removeChild(emptyMessage)
-            }
-
-            let goMessage = container.querySelector('.dropdown-go-message')
-
-            if (null === goMessage) {
-                goMessage = document.createElement('a')
-                goMessage.classList.add('dropdown-item', 'dropdown-go-message')
-                goMessage.setAttribute('href', container.getAttribute('data-go-message-url'))
-                goMessage.innerText = container.getAttribute('data-go-message')
-
-                container.appendChild(goMessage)
-            }
-        }
+        AddMessageInIndexPage(data.uuid, data.index)
+        AddMessageInNavbarPage(data.uuid, data.navbar)
+        AddMessageInMessagePage(data.uuid, data.message, data.sender_or_recipient)
     }, false)
 
     eventSource.addEventListener('user_messenger_refresh_navbar', (e) => {

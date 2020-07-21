@@ -1,7 +1,7 @@
 {% extends 'default/template/template.html.twig' %}
 
 {% block title %}
-    <i class="{{ include('@UserMessenger/_ico.html.twig', with_context = false) }}"></i>
+    <i class="{{ include('@UserMessenger/include/_ico.html.twig', with_context = false) }}"></i>
     {{ 'title.user.message'|trans({}, 'user_messenger') }}
     <span class="badge badge-blue">
         0
@@ -13,7 +13,7 @@
         {% if conversations is not empty %}
             <div class="comments">
                 {% for conversation in conversations %}
-                    {{ include('@UserMessenger/_message.html.twig',
+                    {{ include('@UserMessenger/include/_message.html.twig',
                         {
                             'page': 'index',
                             'conversation': conversation,

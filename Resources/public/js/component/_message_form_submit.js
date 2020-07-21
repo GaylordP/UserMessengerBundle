@@ -6,7 +6,7 @@ const SendForm = (form) => {
     let user_messenger_conversation_message__token = form.querySelector('#user_messenger_conversation_message__token')
     let userMediasCheckboxes = document.getElementsByName('user_messenger_conversation_message[userMedias][]');
     let userMediasCheckboxesData = [];
-    for (var i = 0; i < userMediasCheckboxes.length; i++) {
+    for (let i = 0; i < userMediasCheckboxes.length; i++) {
         if (userMediasCheckboxes[i].checked){
             userMediasCheckboxesData.push('user_messenger_conversation_message[userMedias][]=' + userMediasCheckboxes[i].value)
         }
