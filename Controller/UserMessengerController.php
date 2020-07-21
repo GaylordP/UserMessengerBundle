@@ -169,6 +169,8 @@ class UserMessengerController extends AbstractController
                 $entityManager->persist($message);
                 $entityManager->flush();
 
+                $request->query->set('umcuuid', $conversation->getUuid());
+
                 if (null === $originalConversation && 2 === count($conversation->__users)) {
                     $update = new Update(
                         'https://bubble.lgbt/user/' . $conversation->__users[0]->getUser()->getSlug(),
@@ -266,6 +268,10 @@ class UserMessengerController extends AbstractController
                     ]),
                 ], Response::HTTP_OK);
             }
+        }
+
+        if (null !== $conversation->getUuid()) {
+            $request->query->set('umcuuid', $conversation->getUuid());
         }
 
         return $this->render('@UserMessenger/message.html.twig', [
