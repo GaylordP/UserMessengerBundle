@@ -270,7 +270,7 @@ class UserMessengerController extends AbstractController
             }
         }
 
-        if (null !== $conversation->getUuid()) {
+        if (null !== $conversation && null !== $conversation->getUuid()) {
             $request->query->set('umcuuid', $conversation->getUuid());
         }
 
