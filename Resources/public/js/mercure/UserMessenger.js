@@ -1,3 +1,41 @@
+import $ from 'jquery'
+
+const IsBottomElementInViewport = (element) => {
+    let rect = element.getBoundingClientRect()
+
+    return (
+        rect.left >= 0
+            &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+            &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    )
+}
+
+const SendReadHttpRequest = () => {
+    let container = document.querySelector('#message-user-messenger > .comments')
+
+    let httpRequest = new XMLHttpRequest()
+    httpRequest.open('GET', container.getAttribute('data-read-link'))
+    httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+    httpRequest.send()
+}
+
+function ReadMessageScroll()
+{
+    console.log('scroll')
+
+    let newMessage = document.querySelectorAll('.comment')
+    newMessage = newMessage[newMessage.length - 1]
+
+    if (true === IsBottomElementInViewport(newMessage)) {
+        console.log('LU !')
+        window.removeEventListener('scroll', ReadMessageScroll)
+
+        SendReadHttpRequest()
+    }
+}
+
 const AddMessageInIndexPage = (uuid, messageHtml) => {
     let container = document.querySelector('#index-user-messenger')
 
@@ -22,6 +60,8 @@ const AddMessageInIndexPage = (uuid, messageHtml) => {
         containerMessageHtml.innerHTML = messageHtml
 
         let findTitleDate = container.querySelector('h2.message-title[data-title-user-messenger-date="' + containerMessageHtml.children[0].getAttribute('data-title-user-messenger-date') + '"]')
+
+        $(containerMessageHtml.children[1]).find('[data-toggle="tooltip"]').tooltip()
 
         if (null === findTitleDate) {
             container.insertBefore(containerMessageHtml.children[1], container.firstChild)
@@ -88,17 +128,29 @@ const AddMessageInMessagePage = (uuid, messageHtml, sender_or_recipient) => {
 
         if (null === findTitleDate) {
             container.appendChild(containerMessageHtml.children[0])
-            container.appendChild(containerMessageHtml.children[0])
 
+            $(containerMessageHtml.children[0]).find('[data-toggle="tooltip"]').tooltip()
+
+            container.appendChild(containerMessageHtml.children[0])
         } else {
+            $(containerMessageHtml.children[1]).find('[data-toggle="tooltip"]').tooltip()
+
             container.appendChild(containerMessageHtml.children[1])
         }
 
         if ('recipient' === sender_or_recipient) {
-            let httpRequest = new XMLHttpRequest()
-            httpRequest.open('GET', container.getAttribute('data-read-link'))
-            httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-            httpRequest.send()
+            window.removeEventListener('scroll', ReadMessageScroll)
+
+            let newMessage = container.querySelectorAll('.comment')
+            newMessage = newMessage[newMessage.length - 1]
+
+            if (true === IsBottomElementInViewport(newMessage)) {
+                console.log('cas a');
+                SendReadHttpRequest()
+            } else {
+                console.log('cas b')
+                window.addEventListener('scroll', ReadMessageScroll)
+            }
         }
     }
 }
@@ -247,5 +299,42 @@ export const EventSourceListener = (eventSource) => {
                 }
             }
         })
+    }, false)
+
+    eventSource.addEventListener('user_messenger_unread_length', (e) => {
+        let data = JSON.parse(e.data)
+
+        let badge = document.querySelector('.badge-user-message-unread')
+        let length = data.length
+        let title = document.querySelector('title')
+        let lastLength = title.getAttribute('data-message-unread-length')
+
+        if (0 === length) {
+            if ('0' !== lastLength) {
+                title.innerHTML = title.innerHTML.replace('(' + lastLength + ') ', '')
+            }
+        } else {
+            if ('0' === lastLength) {
+                title.innerHTML = '(' + length + ') ' + title.innerHTML
+            } else {
+                title.innerHTML = title.innerHTML.replace('(' + lastLength + ')', '(' + length + ')')
+            }
+        }
+
+        title.setAttribute('data-message-unread-length', String(length))
+
+        if (0 === length) {
+            if (badge.classList.contains('badge-red')) {
+                badge.classList.remove('badge-red')
+                badge.classList.add('badge-secondary')
+            }
+        } else {
+            if (badge.classList.contains('badge-secondary')) {
+                badge.classList.remove('badge-secondary')
+                badge.classList.add('badge-red')
+            }
+        }
+
+        badge.innerText = length
     }, false)
 }

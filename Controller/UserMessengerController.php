@@ -236,6 +236,22 @@ class UserMessengerController extends AbstractController
                         'user_messenger_add'
                     );
                     $publisher($update);
+
+                    if ($conversationUser->getUser() !== $this->getUser()) {
+                        $update = new Update(
+                            'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
+                            json_encode([
+                                'length' => count($entityManager
+                                    ->getRepository(UserMessengerConversation::class)
+                                    ->countUnread($conversationUser->getUser())
+                                ),
+                            ]),
+                            true,
+                            null,
+                            'user_messenger_unread_length'
+                        );
+                        $publisher($update);
+                    }
                 }
 
                 if ($request->isXmlHttpRequest()) {
@@ -336,6 +352,20 @@ class UserMessengerController extends AbstractController
                 $conversationUser->setReadAt(new \DateTime());
 
                 $entityManager->flush();
+
+                $update = new Update(
+                    'https://bubble.lgbt/user/' . $conversationUser->getUser()->getSlug(),
+                    json_encode([
+                        'length' => count($entityManager
+                            ->getRepository(UserMessengerConversation::class)
+                            ->countUnread($conversationUser->getUser())
+                        ),
+                    ]),
+                    true,
+                    null,
+                    'user_messenger_unread_length'
+                );
+                $publisher($update);
             }
         }
 
@@ -393,6 +423,20 @@ class UserMessengerController extends AbstractController
         }
 
         $entityManager->flush();
+
+        $update = new Update(
+            'https://bubble.lgbt/user/' . $this->getUser()->getSlug(),
+            json_encode([
+                'length' => count($entityManager
+                    ->getRepository(UserMessengerConversation::class)
+                    ->countUnread($this->getUser())
+                ),
+            ]),
+            true,
+            null,
+            'user_messenger_unread_length'
+        );
+        $publisher($update);
 
         $navbarConversations = $entityManager
             ->getRepository(UserMessengerConversation::class)

@@ -62,7 +62,9 @@ class Extension extends AbstractExtension
     public function countUserMessageUnread(): int
     {
         if (null === $this->countUserMessageUnread) {
-            $this->countUserMessageUnread = 0;
+            $this->countUserMessageUnread = count($this
+                ->userMessengerConversationRepository->countUnread($this->security->getUser())
+            );
         }
 
         return $this->countUserMessageUnread;

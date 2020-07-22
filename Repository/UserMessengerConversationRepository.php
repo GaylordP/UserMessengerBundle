@@ -64,6 +64,35 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
         return $return;
     }
 
+    public function countUnread(User $userLogged): array
+    {
+        return $this
+            ->createQueryBuilder('conversation')
+            ->innerJoin(UserMessengerConversationUser::class, 'messageUserLogged', 'WITH', '
+                messageUserLogged.userMessengerConversation = conversation AND
+                messageUserLogged.user = :userLogged
+            ')
+            ->innerJoin(UserMessengerConversationMessage::class, 'messageLast', 'WITH', '
+                messageLast.userMessengerConversation = conversation AND
+                (messageUserLogged.deletedBeforeAt IS NULL OR (messageLast.createdAt > messageUserLogged.deletedBeforeAt))
+            ')
+            ->leftJoin(UserMessengerConversationMessage::class, 'messageMax', 'WITH', '
+                messageMax.userMessengerConversation = conversation AND
+                (messageUserLogged.deletedBeforeAt IS NULL OR (messageMax.createdAt > messageUserLogged.deletedBeforeAt)) AND
+                messageLast.id < messageMax.id
+            ')
+            ->andWhere('messageMax.id IS NULL')
+            ->andWhere('messageLast.createdBy != :userLogged')
+            ->andWhere('messageUserLogged.readAt < messageLast.createdAt')
+            ->setParameter('userLogged', $userLogged)
+            ->select('
+                conversation
+            ')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findByTwoUsers(
         User $userLogged,
         User $userTo
