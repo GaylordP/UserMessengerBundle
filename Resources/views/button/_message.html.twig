@@ -1,13 +1,15 @@
-{{ 'action.user.message.send'|trans({}, 'user_messenger')|button_link(
-    path('user_message_member',
+{% if app.user != user %}
+    {{ 'action.user.message.send'|trans({}, 'user_messenger')|button_link(
+        path('user_message_member',
+            {
+                'slug': user.slug,
+            }
+        ),
+        'blue',
+        include('@UserMessenger/include/_ico.html.twig', with_context = false),
+        true,
         {
-            'slug': user.slug,
+            'class': 'btn-sm',
         }
-    ),
-    'blue',
-    include('@UserMessenger/include/_ico.html.twig', with_context = false),
-    true,
-    {
-        'class': 'btn-sm',
-    }
-) }}
+    ) }}
+{% endif %}
