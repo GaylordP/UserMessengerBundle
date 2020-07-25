@@ -307,19 +307,7 @@ export const EventSourceListener = (eventSource) => {
         let badge = document.querySelector('.badge-user-message-unread')
         let length = data.length
         let title = document.querySelector('title')
-        let lastLength = title.getAttribute('data-message-unread-length')
-
-        if (0 === length) {
-            if ('0' !== lastLength) {
-                title.innerHTML = title.innerHTML.replace('(' + lastLength + ') ', '')
-            }
-        } else {
-            if ('0' === lastLength) {
-                title.innerHTML = '(' + length + ') ' + title.innerHTML
-            } else {
-                title.innerHTML = title.innerHTML.replace('(' + lastLength + ')', '(' + length + ')')
-            }
-        }
+        let lastUnreadLength = parseInt(title.getAttribute('data-notification-unread-length')) + parseInt(title.getAttribute('data-message-unread-length'))
 
         title.setAttribute('data-message-unread-length', String(length))
 
@@ -336,5 +324,19 @@ export const EventSourceListener = (eventSource) => {
         }
 
         badge.innerText = length
+
+        let nowUnreadLength = parseInt(title.getAttribute('data-notification-unread-length')) + parseInt(title.getAttribute('data-message-unread-length'))
+
+        if (0 === nowUnreadLength) {
+            if (0 !== lastUnreadLength) {
+                title.innerHTML = title.innerHTML.replace('(' + String(lastUnreadLength) + ') ', '')
+            }
+        } else {
+            if (0 === lastUnreadLength) {
+                title.innerHTML = '(' + String(nowUnreadLength) + ') ' + title.innerHTML
+            } else {
+                title.innerHTML = title.innerHTML.replace('(' + String(lastUnreadLength) + ')', '(' + String(nowUnreadLength) + ')')
+            }
+        }
     }, false)
 }
