@@ -83,7 +83,7 @@ class UserMessengerConversationRepository extends ServiceEntityRepository
             ')
             ->andWhere('messageMax.id IS NULL')
             ->andWhere('messageLast.createdBy != :userLogged')
-            ->andWhere('messageUserLogged.readAt < messageLast.createdAt')
+            ->andWhere('(messageUserLogged.readAt < messageLast.createdAt OR messageUserLogged.readAt IS NULL)')
             ->setParameter('userLogged', $userLogged)
             ->select('
                 conversation
