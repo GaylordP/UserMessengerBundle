@@ -87,7 +87,7 @@ const AddMessageInNavbarPage = (uuid, messageHtml) => {
 
         container.insertBefore(containerMessageHtml.children[0], container.firstChild)
 
-        let maxLength = 5
+        let maxLength = 12
         let findNavbarConversations = container.querySelectorAll('.user-messenger-dropdown-item')
 
         if (findNavbarConversations.length > maxLength) {

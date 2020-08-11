@@ -50,7 +50,7 @@ class Extension extends AbstractExtension
         if (null === $this->userMessenger) {
             $this->userMessenger = $this
                 ->userMessengerConversationRepository
-                ->findAllByUser($this->security->getUser(), 5)
+                ->findAllByUser($this->security->getUser(), 12)
             ;
 
             $this->userMessengerProvider->addExtraInfos($this->userMessenger);

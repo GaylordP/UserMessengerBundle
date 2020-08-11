@@ -440,7 +440,7 @@ class UserMessengerController extends AbstractController
 
         $navbarConversations = $entityManager
             ->getRepository(UserMessengerConversation::class)
-            ->findAllByUser($this->getUser(), 5)
+            ->findAllByUser($this->getUser(), 12)
         ;
 
         $userMessengerProvider->addExtraInfos($navbarConversations);
