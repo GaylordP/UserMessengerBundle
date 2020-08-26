@@ -60,6 +60,7 @@ class UserMessengerConversationMessageType extends AbstractType
                 'row_attr' => [
                     'class' => 'd-none',
                 ],
+                'block_prefix' => 'upload_gallery_user_media',
             ])
         ;
     }

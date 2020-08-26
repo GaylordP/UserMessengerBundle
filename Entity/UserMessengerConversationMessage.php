@@ -124,7 +124,7 @@ class UserMessengerConversationMessage
     /**
      * Add user media
      * 
-     * @param UserMedia userMedia
+     * @param UserMedia $userMedia
      */
     public function addUserMedia(UserMedia $userMedia): void
     {

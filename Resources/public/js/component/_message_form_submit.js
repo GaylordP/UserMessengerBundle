@@ -1,10 +1,10 @@
-import CheckboxBorder from './_message_user_media'
 import LoadUpload from './_message_user_media_upload'
+import FormUploadGalleryBorder from '../../../../../upload-bundle/Resources/public/js/component/_upload_gallery'
 
 const SendForm = (form) => {
     let user_messenger_conversation_message_message = form.querySelector('#user_messenger_conversation_message_message')
     let user_messenger_conversation_message__token = form.querySelector('#user_messenger_conversation_message__token')
-    let userMediasCheckboxes = document.getElementsByName('user_messenger_conversation_message[userMedias][]');
+    let userMediasCheckboxes = document.getElementsByName('user_messenger_conversation_message[userMedias][]')
     let userMediasCheckboxesData = [];
     for (let i = 0; i < userMediasCheckboxes.length; i++) {
         if (userMediasCheckboxes[i].checked){
@@ -40,14 +40,15 @@ const SendForm = (form) => {
 
                 form.reset()
 
-                let userMedias = form.querySelectorAll('.user-messenger-form-user-media-entry')
+                let gallery = form.querySelector('.form-upload-gallery')
+                let userMedias = gallery.querySelectorAll('.form-upload-gallery-entry')
 
                 userMedias.forEach((userMedia) => {
                     let input = userMedia.querySelector('input[type="checkbox"]')
                     input.checked = false
-
-                    CheckboxBorder(userMedia, input)
                 })
+
+                FormUploadGalleryBorder(gallery)
             } else if ('form_error' === json.status) {
                 let userMediaIsOpened = false
 
@@ -64,16 +65,11 @@ const SendForm = (form) => {
                 if (true === userMediaIsOpened) {
                     document.querySelector('.user-messenger-toggle-user-media').classList.add('d-none')
                     document.querySelector('#dropzone-user_messenger_conversation_message_upload').classList.remove('d-none')
-                    document.querySelector('.user-messenger-form-user-media').parentNode.classList.remove('d-none')
+                    document.querySelector('.form-upload-gallery').parentNode.classList.remove('d-none')
                 }
 
-                let userMedias = document.querySelectorAll('.user-messenger-form-user-media-entry')
 
-                userMedias.forEach((userMedia) => {
-                    let input = userMedia.querySelector('input[type="checkbox"]')
-
-                    CheckboxBorder(userMedia, input)
-                })
+                FormUploadGalleryBorder(document)
             }
         }
     }

@@ -17,20 +17,3 @@
 .comments > form[name="user_messenger_conversation_message"] > div:first-of-type > fieldset.form-group {
     margin-top: 0;
 }
-
-.row.user-messenger-form-user-media {
-    margin: -.25rem;
-    cursor: pointer;
-}
-
-.row.user-messenger-form-user-media:first-of-type {
-    margin-top: .25rem;
-}
-
-.row.user-messenger-form-user-media > div {
-    padding: .25rem;
-}
-
-.row.user-messenger-form-user-media > div > div.form-check {
-    display: none;
-}

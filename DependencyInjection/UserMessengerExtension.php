@@ -16,12 +16,5 @@ class UserMessengerExtension extends Extension
             new FileLocator(__DIR__.'/../Resources/config')
         );
         $loader->load('services.yaml');
-
-        $container->setParameter('twig.form.resources', array_merge(
-            [
-                '@UserMessenger/form/theme.html.twig'
-            ],
-            $container->getParameter('twig.form.resources')
-        ));
     }
 }
